@@ -25,6 +25,13 @@ class AccountPaymentGroup(models.Model):
     _order = "payment_date desc"
     _inherit = 'mail.thread'
 
+    def _default_company_id(self):
+        res = self.env['res.company'].search([('country_id','=',self.env.ref('base.ar').id)],limit=1)
+        if res:
+            return res.id
+        else:
+            return None
+
     document_number = fields.Char(
         string='Nro Documento',
         copy=False,
@@ -57,7 +64,7 @@ class AccountPaymentGroup(models.Model):
         required=True,
         index=True,
         change_default=True,
-        default=lambda self: self.env.user.company_id,
+        default=_default_company_id,
     )
     payment_methods = fields.Char(
         string='Metodos de Pago',
@@ -518,17 +525,36 @@ class AccountPaymentGroup(models.Model):
             lines = rec.move_line_ids.browse()
             # not sure why but self.move_line_ids dont work the same way
             #payment_lines = rec.payment_ids.mapped('move_line_ids')
-            payment_lines = rec.payment_ids.mapped('invoice_line_ids')
+            #payment_lines = rec.payment_ids.mapped('invoice_line_ids')
+            payment_lines = self.env['account.move.line']
+            res = self.env['account.move.line']
+            for payment in rec.payment_ids:
+                move_id = payment.move_id
+                for pay_line in move_id.line_ids:
+                    if pay_line.account_id.account_type in ['asset_receivable','liability_payable']:
+                        payment_lines += pay_line
 
-            reconciles = rec.env['account.partial.reconcile'].search([
-                ('credit_move_id', 'in', payment_lines.ids)])
-            lines |= reconciles.mapped('debit_move_id')
+            if rec.partner_type == 'customer': 
+                reconciles = rec.env['account.partial.reconcile'].search([
+                    ('credit_move_id', 'in', payment_lines.ids)])
+            else:
+                reconciles = rec.env['account.partial.reconcile'].search([
+                    ('debit_move_id', 'in', payment_lines.ids)])
+            for reconcile in reconciles:
+                if rec.partner_type == 'customer':
+                    res += reconcile.debit_move_id
+                else:
+                    res += reconcile.credit_move_id
+            #reconciles = rec.env['account.partial.reconcile'].search([
+            #    ('credit_move_id', 'in', payment_lines.ids)])
+            #lines |= reconciles.mapped('debit_move_id')
 
-            reconciles = rec.env['account.partial.reconcile'].search([
-                ('debit_move_id', 'in', payment_lines.ids)])
-            lines |= reconciles.mapped('credit_move_id')
+            #reconciles = rec.env['account.partial.reconcile'].search([
+            #    ('debit_move_id', 'in', payment_lines.ids)])
+            #lines |= reconciles.mapped('credit_move_id')
 
-            rec.matched_move_line_ids = lines - payment_lines
+            #rec.matched_move_line_ids = lines - payment_lines
+            rec.matched_move_line_ids = res
 
     # @api.depends('payment_ids.move_line_ids')
     @api.depends('payment_ids.invoice_ids')
@@ -624,12 +650,15 @@ class AccountPaymentGroup(models.Model):
         self.ensure_one()
         if self.partner_type == 'supplier':
             move_types = ['in_invoice','in_refund']
+            account_type = 'liability_payable'
         else:
             move_types = ['out_invoice','out_refund']
+            account_type = 'asset_receivable'
         return [
             ('partner_id.commercial_partner_id', '=',
                 self.partner_id.id),
             ('account_id.reconcile', '=', True),
+            ('account_id.account_type', '=', account_type),
             ('move_id.move_type', 'in', move_types),
             ('reconciled', '=', False),
             ('full_reconcile_id', '=', False),
@@ -676,14 +705,19 @@ class AccountPaymentGroup(models.Model):
         return rec
 
     def button_journal_entries(self):
+        move_ids = []
+        for payment in self.payment_ids:
+            if payment.move_id:
+                move_ids.append(payment.move_id.id)
         return {
             'name': _('Journal Items'),
             'view_type': 'form',
-            'view_mode': 'tree,form',
+            'view_mode': 'list,form',
             'res_model': 'account.move.line',
             'view_id': False,
             'type': 'ir.actions.act_window',
-            'domain': [('payment_id', 'in', self.payment_ids.ids)],
+            'domain': [('move_id', 'in', move_ids)],
+            #'domain': [('payment_id', 'in', self.payment_ids.ids)],
         }
 
     def unreconcile(self):
@@ -735,7 +769,6 @@ class AccountPaymentGroup(models.Model):
         create_from_expense = self._context.get('create_from_expense', False)
         self = self.with_context({})
         for rec in self:
-
             if not rec.receiptbook_id:
                 rec.payment_ids.write({
                     'receiptbook_id': False,
@@ -777,15 +810,26 @@ class AccountPaymentGroup(models.Model):
             # al crear desde website odoo crea primero el pago y lo postea
             # y no debemos re-postearlo
             if not create_from_website and not create_from_expense:
-                rec.payment_ids.filtered(lambda x: x.state == 'draft').action_post()
+                #rec.payment_ids.filtered(lambda x: x.state == 'draft').action_post()
+                for payment in rec.payment_ids:
+                    if payment.state == 'draft':
+                        if not payment.move_id:
+                            payment._generate_journal_entry()
+                        payment.action_post()
 
-            #counterpart_aml = rec.payment_ids.mapped('move_line_ids').filtered(
-            counterpart_aml = rec.payment_ids.mapped('invoice_line_ids').filtered(
-                lambda r: not r.reconciled and r.account_id.account_type in (
+            # counterpart_aml = rec.payment_ids.mapped('invoice_line_ids').filtered(
+            move_line_ids = self.env['account.move.line']
+            for payment in rec.payment_ids:
+                for move_line in payment.move_id.line_ids:
+                    if move_line.account_id.account_type in ['asset_receivable','liability_payable']:
+                        move_line_ids += move_line
+            counterpart_aml = move_line_ids.filtered(
+                lambda r: r.amount_residual != 0 and r.account_id.account_type in (
                     'liability_payable', 'asset_receivable'))
 
             # porque la cuenta podria ser no recivible y ni conciliable
             # (por ejemplo en sipreco)
+            # raise ValidationError('%s %s'%(counterpart_aml,rec.to_pay_move_line_ids))
             if counterpart_aml and rec.to_pay_move_line_ids:
                 #(counterpart_aml + (rec.to_pay_move_line_ids)).reconcile(
                 #    writeoff_acc_id, writeoff_journal_id)

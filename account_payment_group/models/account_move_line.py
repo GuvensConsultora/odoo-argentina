@@ -30,9 +30,15 @@ class AccountMoveLine(models.Model):
             return False
         payments = self.env['account.payment.group'].browse(
             payment_group_id).payment_ids
+        #raise ValidationError(str(payments))
         # payment_move_lines = payments.mapped('move_line_ids')
-        payment_move_lines = payments.mapped('invoice_line_ids')
-
+        # payment_move_lines = payments.mapped('invoice_line_ids')
+        payment_move_lines = self.env['account.payment.group'].browse(payment_group_id).matched_move_line_ids
+        for payment  in payments:
+            for move_line in payment.move_id.line_ids:
+                if move_line.account_id.account_type in ['asset_receivable','lialibility_payable']:
+                    payment_move_lines += move_line
+        # raise ValidationError(str(payment_move_lines))
         for rec in self:
             matched_amount = 0.0
             reconciles = self.env['account.partial.reconcile'].search([

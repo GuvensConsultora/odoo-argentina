@@ -98,35 +98,23 @@ class AccountPayment(models.Model):
 
     def _get_blocking_l10n_latam_warning_msg(self):
         msgs = []
-        return msgs
-
-    def _X_get_blocking_l10n_latam_warning_msg(self):
-        msgs = []
         for rec in self.filtered('l10n_latam_move_check_ids'):
-            if rec.currency_id and not rec.currency_id.is_zero(rec.l10n_latam_check_id.amount - rec.amount):
-                msgs.append(_(
-                    'The amount of the payment (%s) does not match the amount of the selected check (%s). '
-                    'Please try to deselect and select the check again.', rec.amount, rec.l10n_latam_check_id.amount))
-            if not rec.currency_id and (rec.l10n_latam_check_id.amount - rec.amount) > 0:
-                msgs.append(_(
-                    'The amount of the payment (%s) does not match the amount of the selected check (%s). '
-                    'Please try to deselect and select the check again.', rec.amount, rec.l10n_latam_check_id.amount))
             if rec.payment_method_line_id.code in ['in_third_party_checks', 'out_third_party_checks']:
-                if rec.l10n_latam_check_id.state != 'posted':
-                    msgs.append(_('Selected check "%s" is not posted', rec.l10n_latam_check_id.display_name))
-                elif (rec.payment_type == 'outbound' and
-                        rec.l10n_latam_check_id.l10n_latam_check_current_journal_id != rec.journal_id) or (
+                for check in rec.l10n_latam_new_check_ids:
+                    if check.state != 'in_process':
+                        msgs.append(_('Selected check "%s" is not posted', check.display_name))
+                    elif (rec.payment_type == 'outbound' and
+                        check.l10n_latam_check_current_journal_id != rec.journal_id) or (
                         rec.payment_type == 'inbound' and rec.is_internal_transfer and
-                        rec.l10n_latam_check_id.l10n_latam_check_current_journal_id != rec.destination_journal_id):
+                        check.l10n_latam_check_current_journal_id != rec.destination_journal_id):
                     # check outbound payment and transfer or inbound transfer
-                    msgs.append(_(
-                        'Check "%s" is not anymore in journal "%s", it seems it has been moved by another payment.',
-                        rec.l10n_latam_check_id.display_name, rec.journal_id.name
-                        if rec.payment_type == 'outbound' else rec.destination_journal_id.name))
-                elif rec.payment_type == 'inbound' and not rec.is_internal_transfer and \
+                        msgs.append(_(
+                            'Check "%s" is not anymore in journal "%s", it seems it has been moved by another payment.',
+                            check.display_name, rec.journal_id.name))
+                    elif rec.payment_type == 'inbound' and not rec.is_internal_transfer and \
                         rec.l10n_latam_check_id.l10n_latam_check_current_journal_id:
-                    msgs.append(_("Check '%s' is on journal '%s', it can't be received it again",
-                                rec.l10n_latam_check_id.display_name, rec.journal_id.name))
+                        msgs.append(_("Check '%s' is on journal '%s', it can't be received it again",
+                                check.display_name, rec.journal_id.name))
         return msgs
 
 
