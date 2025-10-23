@@ -36,5 +36,5 @@
     'installable': True,
     'name': 'Retenciones automaticas en pagos',
     'test': [],
-    'version': '18.0.1.1.0',
+    'version': '18.0.1.2.0',
 }
