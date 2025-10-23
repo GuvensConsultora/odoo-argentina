@@ -38,13 +38,19 @@ class AccountPaymentGroup(models.Model):
     def default_get(self, fields):
         res = super(AccountPaymentGroup, self).default_get(fields)
         if res.get('partner_type') == 'supplier':
+            #res.update({
+            #    'company_regimenes_ganancias_ids': [(6,0,self.env.user.company_id.regimenes_ganancias_ids.ids)],
+            #    'retencion_ganancias': 'nro_regimen',
+            #    })
             res.update({
                 'company_regimenes_ganancias_ids': [(6,0,self.env.user.company_id.regimenes_ganancias_ids.ids)],
-                'retencion_ganancias': 'nro_regimen',
+                'retencion_ganancias': 'no_aplica',
                 })
         else:
             res.update({
-                'company_regimenes_ganancias_ids': [(6,0,[])]
+                #'company_regimenes_ganancias_ids': [(6,0,[])]
+                'company_regimenes_ganancias_ids': [(6,0,self.env.user.company_id.regimenes_ganancias_ids.ids)],
+                'retencion_ganancias': 'no_aplica',
                 })
         return res
 
@@ -62,7 +68,7 @@ class AccountPaymentGroup(models.Model):
 
     @api.onchange('commercial_partner_id')
     def change_retencion_ganancias(self):
-        if self.commercial_partner_id.imp_ganancias_padron in ['EX', 'NC']:
+        if self.commercial_partner_id.imp_ganancias_padron in ['EX', 'NC'] or not self.commercial_partner_id.imp_ganancias_padron:
             self.retencion_ganancias = 'no_aplica'
         else:
             cia_regs = self.company_regimenes_ganancias_ids
@@ -75,6 +81,7 @@ class AccountPaymentGroup(models.Model):
             else:
                 def_regimen = False
             self.regimen_ganancias_id = def_regimen
+            self.retencion_ganancias = 'nro_regimen'
 
     # sacamos esto por ahora ya que no es muy prolijo y nos se esta usando, si
     # lo llegamos a activar entonces tener en cuenta que en sipreco no queremos

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data> 
+
+        <record id="l10n_ar_withholding_automatic_view_tax_form" model="ir.ui.view">
+            <field name="name">l10n_ar.withholding_automatic_account.tax.form</field>
+            <field name="model">account.tax</field>
+            <field name="inherit_id" ref="account.view_tax_form"/>
+            <field name="arch" type="xml">
+		    <!-- TODO mejorar esta vista -->
+		    <field name="active" position="after">
+			    <field name="withholding_journal_id" domain="[('type','=','cash')]" />
+			    <field name="afip_code" />
+		    </field>
+            </field>
+        </record>
+
+    </data>
+</odoo>

@@ -198,6 +198,49 @@ class AccountTax(models.Model):
                         base_amount, regimen.porcentaje_inscripto / 100.0)
             elif imp_ganancias_padron == 'NI':
                 # alicuota no inscripto
+                if base_amount == 0:
+                    base_amount = payment_group.to_pay_amount
+                # alicuota inscripto
+                non_taxable_amount = (
+                    regimen.montos_no_sujetos_a_retencion)
+                vals['withholding_non_taxable_amount'] = non_taxable_amount
+                prev_payments = []
+                if self.withholding_accumulated_payments:
+                    payment_date = str(payment_group.payment_date)[:8]
+                    payment_date = payment_date + '00'
+                    payments = self.env['account.payment'].search([('payment_type','=','outbound'),('state','=','posted'),('payment_group_id','!=',payment_group.id),\
+                                        ('partner_id','=',payment_group.partner_id.id),('used_withholding','=',False),('payment_group_id.retencion_ganancias','=','nro_regimen')])
+                    previous_amount = 0
+                    for payment in payments:
+                        if payment_group.payment_date.month == payment.payment_group_id.payment_date.month and payment_group.payment_date.year == payment.payment_group_id.payment_date.year:
+                            if payment_group.payment_date.day >= payment.payment_group_id.payment_date.day:
+                                if payment.payment_group_id and payment.payment_group_id.matched_move_line_ids:
+                                    for matched_line in payment.payment_group_id.matched_move_line_ids:
+                                        matched_amount = matched_line.move_id._get_tax_factor() * (-1) * matched_line.with_context({'payment_group_id': payment.payment_group_id.id}).payment_group_matched_amount
+                                    previous_amount += matched_amount
+                                else:
+                                    previous_amount += payment.amount
+                                    # esta linea MGO
+                                prev_payments.append(str(payment.id))
+                    base_amount += previous_amount
+                    payment_group.write({'temp_payment_ids': ','.join(prev_payments)})
+
+                if base_amount < non_taxable_amount and not prev_payments:
+                    base_amount = 0.0
+                elif not prev_payments:
+                    #raise ValidationError('estamos aca #2')
+                    base_amount -= non_taxable_amount
+                elif prev_payments:
+                    flag_substract = True
+                    for idx in prev_payments:
+                        prev_pay_obj = self.env['account.payment'].browse(int(idx))
+                        if prev_pay_obj.tax_withholding_id:
+                            flag_substract = False
+                    if flag_substract:
+                        #raise ValidationError('estamos aca #3')
+                        base_amount -= non_taxable_amount
+
+                vals['withholdable_base_amount'] = base_amount
                 amount = base_amount * (
                     regimen.porcentaje_no_inscripto / 100.0)
                 vals['comment'] = "%s x %s" % (
