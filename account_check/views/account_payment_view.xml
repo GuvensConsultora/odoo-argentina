@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+    <!-- Por qué: l10n_latam_check_* fields removidos de account.payment en Odoo 19 -->
+    <!-- Tip: en Odoo 19 los datos del cheque están en el modelo l10n_latam.check directo -->
     <record id="view_payment_check_tree" model="ir.ui.view">
         <field name="name">account_check.account.payment.tree</field>
         <field name="model">account.payment</field>
 	<field name="arch" type="xml">
-		<!-- Odoo 19: tree -> list -->
 		<list>
-			<field name="check_number" />
-			<field name="partner_id" />
-			<field name="l10n_latam_check_payment_date" />
-			<field name="l10n_latam_check_bank_id" />
-			<field name="amount" />
-			<field name="currency_id" />
+			<field name="name"/>
+			<field name="partner_id"/>
+			<field name="date"/>
+			<field name="amount"/>
+			<field name="currency_id"/>
 		</list>
         </field>
     </record>
