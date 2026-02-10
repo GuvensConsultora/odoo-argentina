@@ -1,5 +1,4 @@
 from odoo import models, fields
-import odoo.addons.decimal_precision as dp
 
 
 class AccountTaxWithholdingRule(models.Model):
@@ -30,6 +29,6 @@ class AccountTaxWithholdingRule(models.Model):
     )
     fix_amount = fields.Float(
         'Monto',
-        digits=dp.get_precision('Account'),
+        digits='Account',
         help="Monto fijo despues del porcentaje"
     )

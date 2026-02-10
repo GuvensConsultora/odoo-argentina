@@ -3,7 +3,7 @@
 from odoo import api, fields, models, tools, _
 from odoo.exceptions import UserError,ValidationError
 from odoo.tools import float_is_zero, pycompat
-from odoo.addons import decimal_precision as dp
+# Odoo 19: decimal_precision eliminado, usar digits='Nombre' directamente
 from datetime import date
 import os
 import base64

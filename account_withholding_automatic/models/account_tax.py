@@ -1,5 +1,5 @@
 from odoo import models, fields, api, _
-import odoo.addons.decimal_precision as dp
+# Odoo 19: decimal_precision eliminado
 from odoo.exceptions import UserError, ValidationError
 from ast import literal_eval
 from odoo.tools.safe_eval import safe_eval as eval
@@ -12,12 +12,12 @@ class AccountTax(models.Model):
 
     withholding_non_taxable_amount = fields.Float(
         'Monto no imponible de impuesto',
-        digits=dp.get_precision('Account'),
+        digits='Account',
         help="Amount to be substracted before applying alicuot"
     )
     withholding_non_taxable_minimum = fields.Float(
         'Minimo no imponible',
-        digits=dp.get_precision('Account'),
+        digits='Account',
         help="Amounts lower than this wont't have any withholding"
     )
     withholding_amount_type = fields.Selection([
@@ -89,7 +89,7 @@ result = withholdable_base_amount * 0.10
     )
     # amount = fields.Float(
     #     'Amount',
-    #     # digits=dp.get_precision('Account'),
+    #     # digits='Account',
     #     digits=get_precision_tax(),
     #     help="For taxes of type percentage, enter % ratio between 0-1."
     #     )

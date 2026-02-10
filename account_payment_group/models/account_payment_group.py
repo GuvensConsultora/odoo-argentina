@@ -262,9 +262,8 @@ class AccountPaymentGroup(models.Model):
 
 
 
-    # Odoo 19: _sql_constraints → models.Constraint()
-    _constraints = [
-        models.Constraint('unique(document_number, receiptbook_id)',
+    _sql_constraints = [
+        ('document_number_uniq', 'unique(document_number, receiptbook_id)',
             'Document number must be unique per receiptbook!')]
 
     def _compute_next_number(self):
@@ -320,9 +319,8 @@ class AccountPaymentGroup(models.Model):
                 name = _('Draft Payment')
             rec.name = name
 
-    # Odoo 19: _sql_constraints → models.Constraint()
-    _constraints = [
-        models.Constraint('unique(document_number, receiptbook_id)',
+    _sql_constraints = [
+        ('name_uniq', 'unique(document_number, receiptbook_id)',
             'Document number must be unique per receiptbook!')]
 
     @api.constrains('company_id', 'partner_type')
