@@ -35,7 +35,7 @@
     <field name="model">account.payment</field>
     <field name="arch" type="xml">
         <list>
-        <!-- <tree decoration-info="state=='draft'" decoration-muted="state=='reconciled'"> -->
+        <!-- <list decoration-info="state=='draft'" decoration-muted="state=='reconciled'"> -->
             <!-- <field name="payment_date"/> -->
             <field name="name"/>
             <field name="journal_id"/>

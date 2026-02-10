@@ -18,9 +18,9 @@
             <field name="model">l10n_latam.document.type</field>
             <field name="inherit_id" ref="l10n_latam_invoice_document.view_document_type_tree"/>
             <field name="arch" type="xml">
-                <tree>
+                <list>
                     <field name="export_to_digital" widget="boolean_toggle" />
-	    	</tree>
+	    	</list>
 	    	<xpath expr="//tree" position="attributes">
 		    <attribute name="editable">bottom</attribute>
 		</xpath>

@@ -5,14 +5,14 @@
         <field name="name">account.checkbook.tree</field>
         <field name="model">account.checkbook</field>
         <field name="arch" type="xml">
-            <tree string="Checkbooks" editable="bottom">
+            <list string="Checkbooks" editable="bottom">
                 <field name="issue_check_subtype"/>
                 <field name="name"/>
                 <field name="next_number"/>
                 <field name="range_to"/>
                 <field name="numerate_on_printing"/>
                 <field name="state"/>
-            </tree>
+            </list>
         </field>
     </record>
 
