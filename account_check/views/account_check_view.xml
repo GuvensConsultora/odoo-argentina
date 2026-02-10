@@ -26,14 +26,16 @@
         </field>
     </record>
 
-    <!-- Odoo 19: vista heredada eliminada, create se maneja por acción/contexto -->
-    <!--
+    <!-- Odoo 19: desactivar vista heredada que falla con selector tree/list -->
     <record model="ir.ui.view" id="view_account_check_create_tree">
         <field name="name">account.check.create.tree</field>
         <field name="model">account.check</field>
+        <field name="active" eval="False"/>
         <field name="inherit_id" ref="view_account_check_tree"/>
+        <field name="arch" type="xml">
+            <data/>
+        </field>
     </record>
-    -->
 
     <record model="ir.ui.view" id="view_account_check_form">
         <field name="name">account.check.form</field>
