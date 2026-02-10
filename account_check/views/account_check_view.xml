@@ -26,8 +26,7 @@
         </field>
     </record>
 
-    <!-- Odoo 19: eliminar vista heredada que falla con selector tree/list -->
-    <delete model="ir.ui.view" search="[('key', '=', 'account_check.view_account_check_create_tree')]"/>
+    <!-- Odoo 19: view_account_check_create_tree eliminada por pre-migration script -->
 
     <record model="ir.ui.view" id="view_account_check_form">
         <field name="name">account.check.form</field>
