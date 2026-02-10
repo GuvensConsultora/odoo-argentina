@@ -21,7 +21,7 @@ class AfipwsConnection(models.Model):
         'Company',
         required=True,
         index=True,
-        auto_join=True,
+        bypass_search_access=True,
     )
     uniqueid = fields.Char(
         'Unique ID',

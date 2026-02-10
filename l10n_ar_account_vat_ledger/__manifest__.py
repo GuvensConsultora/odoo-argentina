@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Argentinian VAT Ledger Management",
-    'version': '18.0.1.4.0',
+    'version': '19.0.1.4.0',
     'category': 'Localization/Argentina',
     'sequence': 14,
     'author': 'A2 Systems,ADHOC SA,Moldeo Interactive,Odoo Community Association (OCA)',

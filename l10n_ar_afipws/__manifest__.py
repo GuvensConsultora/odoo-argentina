@@ -1,6 +1,6 @@
 {
     'name': 'Modulo Base para los Web Services de AFIP',
-    'version': '18.0.2.0.0',
+    'version': '19.0.2.0.0',
     'category': 'Localization/Argentina',
     'sequence': 14,
     'author': 'A2 Systems,ADHOC SA, Moldeo Interactive,Odoo Community Association (OCA)',

@@ -37,7 +37,7 @@ class ResPartner(models.Model):
     afip_responsability_type_id = fields.Many2one(
         'l10n_ar.afip.responsability.type',
         'AFIP Responsability Type',
-        auto_join=True,
+        bypass_search_access=True,
         index=True,
     )
     # campos desde

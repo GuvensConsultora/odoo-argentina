@@ -45,7 +45,7 @@ class AccountPaymentGroup(models.Model):
         'account.payment.receiptbook',
         'Talonario de Recibos',
         ondelete='restrict',
-        auto_join=True,
+        bypass_search_access=True,
     )
     next_number = fields.Integer(
         related='receiptbook_id.sequence_id.number_next_actual',
@@ -201,7 +201,7 @@ class AccountPaymentGroup(models.Model):
         states={'draft': [('readonly', False)]},
         # auto_join not yet implemented for m2m. TODO enable when implemented
         # https://github.com/odoo/odoo/blob/master/odoo/osv/expression.py#L899
-        # auto_join=True,
+        # bypass_search_access=True,
     )
     matched_move_line_ids = fields.Many2many(
         'account.move.line',
@@ -238,7 +238,7 @@ class AccountPaymentGroup(models.Model):
         states={
             'draft': [('readonly', False)],
             'confirmed': [('readonly', False)]},
-        auto_join=True,
+        bypass_search_access=True,
     )
     account_internal_type = fields.Char(
             'account_internal_type',
@@ -262,8 +262,9 @@ class AccountPaymentGroup(models.Model):
 
 
 
-    _sql_constraints = [
-        ('document_number_uniq', 'unique(document_number, receiptbook_id)',
+    # Odoo 19: _sql_constraints → models.Constraint()
+    _constraints = [
+        models.Constraint('unique(document_number, receiptbook_id)',
             'Document number must be unique per receiptbook!')]
 
     def _compute_next_number(self):
@@ -319,8 +320,9 @@ class AccountPaymentGroup(models.Model):
                 name = _('Draft Payment')
             rec.name = name
 
-    _sql_constraints = [
-        ('name_uniq', 'unique(document_number, receiptbook_id)',
+    # Odoo 19: _sql_constraints → models.Constraint()
+    _constraints = [
+        models.Constraint('unique(document_number, receiptbook_id)',
             'Document number must be unique per receiptbook!')]
 
     @api.constrains('company_id', 'partner_type')

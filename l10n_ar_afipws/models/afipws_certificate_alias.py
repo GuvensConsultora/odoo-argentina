@@ -43,7 +43,7 @@ class AfipwsCertificateAlias(models.Model):
         'Company',
         required=True,
         default=lambda self: self.env.user.company_id,
-        auto_join=True,
+        bypass_search_access=True,
         index=True,
     )
     country_id = fields.Many2one(
@@ -80,7 +80,7 @@ class AfipwsCertificateAlias(models.Model):
         'afipws.certificate',
         'alias_id',
         'Certificates',
-        auto_join=True,
+        bypass_search_access=True,
     )
     service_type = fields.Selection(
         [('in_house', 'In House'), ('outsourced', 'Outsourced')],

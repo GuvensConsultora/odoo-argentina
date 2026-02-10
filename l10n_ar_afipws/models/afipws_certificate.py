@@ -23,7 +23,7 @@ class AfipwsCertificate(models.Model):
         ondelete='cascade',
         string='Certificate Alias',
         required=True,
-        auto_join=True,
+        bypass_search_access=True,
         index=True,
     )
     csr = fields.Text(

@@ -32,7 +32,7 @@ class AccountCheckOperation(models.Model):
         'Cheque',
         required=True,
         ondelete='cascade',
-        auto_join=True,
+        bypass_search_access=True,
         index=True,
     )
     operation = fields.Selection([
@@ -130,7 +130,7 @@ class AccountCheck(models.Model):
     operation_ids = fields.One2many(
         'account.check.operation',
         'check_id',
-        auto_join=True,
+        bypass_search_access=True,
     )
     name = fields.Char(
         required=True,
@@ -151,7 +151,7 @@ class AccountCheck(models.Model):
         'Recibos',
         readonly=True,
         states={'draft': [('readonly', False)]},
-        auto_join=True,
+        bypass_search_access=True,
         index=True,
     )
     issue_check_subtype = fields.Selection(

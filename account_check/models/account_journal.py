@@ -13,7 +13,7 @@ class AccountJournal(models.Model):
         'account.checkbook',
         'journal_id',
         'Checkbooks',
-        auto_join=True,
+        bypass_search_access=True,
     )
 
     #@api.model

@@ -53,7 +53,7 @@ class AccountCheckbook(models.Model):
         ondelete='cascade',
         context={'default_type': 'bank'},
         states={'draft': [('readonly', False)]},
-        auto_join=True,
+        bypass_search_access=True,
     )
     range_to = fields.Integer(
         'To Number',
