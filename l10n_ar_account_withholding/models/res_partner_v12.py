@@ -35,7 +35,7 @@ class ResPartner(models.Model):
         'Start-up Date',
     )
     afip_responsability_type_id = fields.Many2one(
-        'l10n_ar.afip.responsability.type',
+        'l10n_ar.afip.responsibility.type',
         'AFIP Responsability Type',
         bypass_search_access=True,
         index=True,
