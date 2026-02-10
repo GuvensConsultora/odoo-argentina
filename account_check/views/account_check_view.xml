@@ -124,7 +124,7 @@
             <!-- Por qué: datetime.timedelta no disponible en contexto eval, usar relativedelta -->
             <search>
                 <field name="name"/>
-                <field name="first_partner_id"/>
+                <!-- Por qué: first_partner_id es computed sin store=True, no se puede buscar en Odoo 19 -->
                 <field name="partner_id"/>
                 <field name="journal_id"/>
                 <field name="company_id" groups="base.group_multi_company"/>
@@ -141,7 +141,6 @@
                     <filter name="group_payment_date" string="Payment Date" context="{'group_by':'payment_date'}"/>
                     <filter name="group_journal_id" string="Journal" context="{'group_by':'journal_id'}"/>
                     <filter name="group_state" string="State" context="{'group_by':'state'}"/>
-                    <filter name="group_first_partner_id" string="First operation partner" context="{'group_by':'first_partner_id'}"/>
                     <filter name="group_last_partner_id" string="Last operation partner" context="{'group_by':'partner_id'}"/>
                 </group>
             </search>
