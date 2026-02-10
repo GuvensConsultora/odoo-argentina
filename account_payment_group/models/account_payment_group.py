@@ -850,7 +850,7 @@ class AccountPaymentGroup(models.Model):
                     self.env.cr.execute(sql)
 
 
-    @api.returns('mail.message', lambda value: value.id)
+    # Odoo 19: @api.returns eliminado
     def message_post(self, **kwargs):
         if self.env.context.get('mark_payment_as_sent'):
             self.filtered(lambda rec: not rec.sent).write({'sent': True})
