@@ -120,11 +120,9 @@
         <field name="name">check.search</field>
         <field name="model">account.check</field>
         <field name="arch" type="xml">
-            <!-- Por qué: Odoo 19 valida unicidad de name entre field y filter -->
-            <!-- Por qué: datetime.timedelta no disponible en contexto eval, usar relativedelta -->
+            <!-- Por qué: Odoo 19 compara date objects directo, no necesita strftime -->
             <search>
                 <field name="name"/>
-                <!-- Por qué: first_partner_id es computed sin store=True, no se puede buscar en Odoo 19 -->
                 <field name="partner_id"/>
                 <field name="journal_id"/>
                 <field name="company_id" groups="base.group_multi_company"/>
@@ -132,10 +130,12 @@
                 <field name="owner_name"/>
                 <field name="owner_vat"/>
                 <field name="payment_date"/>
+                <separator/>
                 <filter name="to_cash" string="Ready to Cash"
-                    domain="[('state', '=', 'holding'), ('payment_date', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                    domain="[('state', '=', 'holding'), ('payment_date', '&lt;=', context_today())]"/>
                 <filter name="to_expire" string="Soon to Expire"
-                    domain="[('state', '=', 'holding'), ('payment_date', '&lt;=', (context_today()-relativedelta(days=15)).strftime('%Y-%m-%d'))]"/>
+                    domain="[('state', '=', 'holding'), ('payment_date', '&lt;=', context_today() - relativedelta(days=15))]"/>
+                <separator/>
                 <group expand="0" string="Group By...">
                     <filter name="group_issue_date" string="Issue Date" context="{'group_by':'issue_date'}"/>
                     <filter name="group_payment_date" string="Payment Date" context="{'group_by':'payment_date'}"/>
