@@ -5,32 +5,33 @@
         <field name="name">account_check.account.payment.tree</field>
         <field name="model">account.payment</field>
 	<field name="arch" type="xml">
-		<tree>
+		<!-- Odoo 19: tree -> list -->
+		<list>
 			<field name="check_number" />
 			<field name="partner_id" />
 			<field name="l10n_latam_check_payment_date" />
 			<field name="l10n_latam_check_bank_id" />
 			<field name="amount" />
 			<field name="currency_id" />
-		</tree>
+		</list>
         </field>
     </record>
 
+    <!-- Odoo 19: l10n_latam_check.view_account_payment_form_inherited y
+         l10n_latam_check_id eliminados. Vista deshabilitada hasta adaptar
+         al nuevo modelo de cheques de Odoo 19. -->
+    <!--
     <record id="view_account_check_payment_form" model="ir.ui.view">
         <field name="name">account_check.account.payment.form</field>
         <field name="model">account.payment</field>
         <field name="inherit_id" ref="l10n_latam_check.view_account_payment_form_inherited"/>
 	<field name="arch" type="xml">
 		<field name="l10n_latam_check_id" position="attributes">
-			<attribute name="context">{'tree_view_ref': 'account_check.view_payment_check_tree','search_view_ref': 'l10n_latam_check.view_account_payment_third_party_checks_search'}</attribute>
-			<attribute name="domain">
-                        [('payment_method_code', '=', 'new_third_party_checks'), ('l10n_latam_check_current_journal_id', '=', journal_id), ('state', '=', 'posted'), ('company_id', '=', company_id), ('check_id.state','=','holding')]
-                            if payment_type == 'outbound' else
-                        [('payment_method_code', '=', 'new_third_party_checks'), ('l10n_latam_check_current_journal_id', '=', destination_journal_id), ('state', '=', 'posted'), ('company_id', '=', company_id)]
-                            if is_internal_transfer else
-                        [('payment_method_code', '=', 'new_third_party_checks'), ('l10n_latam_check_current_journal_id', '=', False), ('state', '=', 'posted'), ('company_id', '=', company_id)]</attribute>
+			<attribute name="context">...</attribute>
+			<attribute name="domain">...</attribute>
 		</field>
         </field>
     </record>
+    -->
 
 </odoo>

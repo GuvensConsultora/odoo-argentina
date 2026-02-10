@@ -20,9 +20,10 @@ class AccountPayment(models.Model):
         'account.check',
         string='Cheque',
     )
+    # Odoo 19: l10n_latam_check_id eliminado, campo cambiado de related a stored
     check_type = fields.Selection(
         [('issue_check', 'Cheque Emitido'), ('third_check', 'Cheque de Terceros')],
-        related='l10n_latam_check_id.check_id.type'
+        string='Tipo de Cheque',
     )
 
 
@@ -191,7 +192,8 @@ class AccountPayment(models.Model):
                 return None
 
             _logger.info('Deliver Check')
-            check = rec.l10n_latam_check_id.check_id
+            # Odoo 19: l10n_latam_check_id eliminado, usamos check_id directo
+            check = rec.check_id
             operation = check._add_operation(
                 'delivered', rec, rec.partner_id, date=rec.date)
             check.state = 'delivered'

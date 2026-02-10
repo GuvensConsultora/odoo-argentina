@@ -111,8 +111,9 @@ class AccountPayment(models.Model):
                         msgs.append(_(
                             'Check "%s" is not anymore in journal "%s", it seems it has been moved by another payment.',
                             check.display_name, rec.journal_id.name))
+                    # Odoo 19: l10n_latam_check_id eliminado, usamos check_id
                     elif rec.payment_type == 'inbound' and not rec.is_internal_transfer and \
-                        rec.l10n_latam_check_id.l10n_latam_check_current_journal_id:
+                        rec.check_id and rec.check_id.journal_id:
                         msgs.append(_("Check '%s' is on journal '%s', it can't be received it again",
                                 check.display_name, rec.journal_id.name))
         return msgs
