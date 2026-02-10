@@ -31,9 +31,10 @@
         <field name="model">account.check</field>
         <field name="inherit_id" ref="view_account_check_tree"/>
         <field name="arch" type="xml">
-                <tree position="attributes">
+                <!-- Odoo 19: tree -> list en herencia -->
+                <list position="attributes">
                 <attribute name="create">true</attribute>
-            </tree>
+            </list>
         </field>
     </record>
 
