@@ -120,7 +120,7 @@
         <field name="name">check.search</field>
         <field name="model">account.check</field>
         <field name="arch" type="xml">
-            <!-- Por qué: Odoo 19 removió atributo expand de <group> en search views (RNG) -->
+            <!-- TEST paso 5: fields + 1 filter, sin separator ni group -->
             <search>
                 <field name="name"/>
                 <field name="partner_id"/>
@@ -130,19 +130,8 @@
                 <field name="owner_name"/>
                 <field name="owner_vat"/>
                 <field name="payment_date"/>
-                <separator/>
                 <filter name="to_cash" string="Ready to Cash"
-                    domain="[('state', '=', 'holding'), ('payment_date', '&lt;=', context_today())]"/>
-                <filter name="to_expire" string="Soon to Expire"
-                    domain="[('state', '=', 'holding'), ('payment_date', '&lt;=', context_today() - relativedelta(days=15))]"/>
-                <separator/>
-                <group string="Group By...">
-                    <filter name="group_issue_date" string="Issue Date" context="{'group_by':'issue_date'}"/>
-                    <filter name="group_payment_date" string="Payment Date" context="{'group_by':'payment_date'}"/>
-                    <filter name="group_journal_id" string="Journal" context="{'group_by':'journal_id'}"/>
-                    <filter name="group_state" string="State" context="{'group_by':'state'}"/>
-                    <filter name="group_last_partner_id" string="Last operation partner" context="{'group_by':'partner_id'}"/>
-                </group>
+                    domain="[('state', '=', 'holding')]"/>
             </search>
         </field>
     </record>
