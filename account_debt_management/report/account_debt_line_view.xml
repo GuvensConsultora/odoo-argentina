@@ -18,15 +18,14 @@
                 <filter string="Facturas Cliente" domain="[('type', 'in', ['out_invoice','out_refund'])]" name="out_invoice"/>
                 <filter string="Sin conciliar" domain="[('full_reconcile_id', '=', False), ('reconciled','=',False), ('account_id.reconcile','=',True)]" help="Unreconciled Journal Items" name="unreconciled"/>
                 <filter string="Unreconciled on currency" domain="[('amount_residual_currency', '!=', 0.0), ('amount_residual', '=', 0.0), ('full_reconcile_id', '=', False)]" help="Items saldados en moneda de la compañía pero no saldados en la moneda secundaria" name="currency_unreconciled"/>
-                <group string="Group By...">
-                    <filter name="account_type" string="Tipo" context="{'group_by': 'account_type'}"/>
-                    <filter name="date" string="Fecha" context="{'group_by': 'date'}"/>
-		    <filter name="partner_id" string="Cliente/Proveedor" context="{'group_by': 'partner_id'}"/>
-                    <filter name="document_type_id" string="Tipo de Documento" context="{'group_by': 'document_type_id'}"/>
-                    <filter name="account_id" string="Cuenta Contable" context="{'group_by': 'account_id'}"/>
-                    <filter name="company_id" string="Empresa" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
-                    <filter name="date_maturity" string="Fecha Vencimiento" context="{'group_by': 'date_maturity'}"/>
-               </group>
+                <!-- Por qué: Odoo 19 removió <group> de search views -->
+                <filter name="account_type" string="Tipo" context="{'group_by': 'account_type'}"/>
+                <filter name="date" string="Fecha" context="{'group_by': 'date'}"/>
+                <filter name="partner_id" string="Cliente/Proveedor" context="{'group_by': 'partner_id'}"/>
+                <filter name="document_type_id" string="Tipo de Documento" context="{'group_by': 'document_type_id'}"/>
+                <filter name="account_id" string="Cuenta Contable" context="{'group_by': 'account_id'}"/>
+                <filter name="company_id" string="Empresa" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
+                <filter name="date_maturity" string="Fecha Vencimiento" context="{'group_by': 'date_maturity'}"/>
             </search>
          </field>
     </record>
