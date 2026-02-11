@@ -18,7 +18,7 @@
                 <filter string="Facturas Cliente" domain="[('type', 'in', ['out_invoice','out_refund'])]" name="out_invoice"/>
                 <filter string="Sin conciliar" domain="[('full_reconcile_id', '=', False), ('reconciled','=',False), ('account_id.reconcile','=',True)]" help="Unreconciled Journal Items" name="unreconciled"/>
                 <filter string="Unreconciled on currency" domain="[('amount_residual_currency', '!=', 0.0), ('amount_residual', '=', 0.0), ('full_reconcile_id', '=', False)]" help="Items saldados en moneda de la compañía pero no saldados en la moneda secundaria" name="currency_unreconciled"/>
-                <group expand="0" string="Group By...">
+                <group string="Group By...">
                     <filter name="account_type" string="Tipo" context="{'group_by': 'account_type'}"/>
                     <filter name="date" string="Fecha" context="{'group_by': 'date'}"/>
 		    <filter name="partner_id" string="Cliente/Proveedor" context="{'group_by': 'partner_id'}"/>
