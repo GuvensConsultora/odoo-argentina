@@ -26,11 +26,13 @@ class AccountPaymentGroup(models.Model):
     _inherit = 'mail.thread'
 
     def _default_company_id(self):
-        res = self.env['res.company'].search([('country_id','=',self.env.ref('base.ar').id)],limit=1)
-        if res:
-            return res.id
-        else:
-            return None
+        # Por qué: en Odoo 19 country_id en res.company es computed no stored,
+        # no puede usarse en dominio SQL. Se navega via partner_id.country_id
+        # que sí está almacenado en base de datos.
+        res = self.env['res.company'].search(
+            [('partner_id.country_id', '=', self.env.ref('base.ar').id)], limit=1
+        )
+        return res.id or None
 
     document_number = fields.Char(
         string='Nro Documento',
