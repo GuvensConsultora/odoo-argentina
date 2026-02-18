@@ -292,65 +292,72 @@ class AccountPayment(models.Model):
 
         return res
 
-    @api.model
-    def create(self, vals):
+    @api.model_create_multi
+    def create(self, vals_list):
         """ When payments are created from bank reconciliation create the
         Payment group before creating payment to avoid raising error, only
-        apply when the all the counterpart account are receivable/payable """
-        # Si viene counterpart_aml entonces estamos viniendo de una
-        # conciliacion desde el wizard
+        apply when the all the counterpart account are receivable/payable.
+        Por qué: Odoo 19 migró create() a model_create_multi → recibe lista de dicts.
+        Patrón: iterar vals_list para pre-procesar cada registro antes del super(). """
         new_aml_dicts = self._context.get('new_aml_dicts', [])
-        if 'journal_id' in vals:
-            journal = self.env['account.journal'].browse(vals.get('journal_id'))
-            if not journal.payment_sequence_id:
-                raise ValidationError('Debe configurar la secuencia de pagos para %s'%(journal.name))
-            next_name = self.env['ir.sequence'].next_by_code(journal.payment_sequence_id.code)
-            vals['name'] = next_name
         counterpart_aml_data = self._context.get('counterpart_aml_dicts', [])
-        if counterpart_aml_data or new_aml_dicts:
-            vals.update(self.infer_partner_info(vals))
-
-        create_from_statement = self._context.get(
-            'create_from_statement', False) and vals.get('partner_type') \
-            and vals.get('partner_id') and all([
-                x['move_line'].account_id.account_type in [
-                    'asset_receivable', 'liability_payable']
-                for x in counterpart_aml_data])
+        create_from_statement = self._context.get('create_from_statement', False)
         create_from_expense = self._context.get('create_from_expense', False)
         create_from_website = self._context.get('create_from_website', False)
-        # NOTE: This is required at least from POS when we do not have
-        # partner_id and we do not want a payment group in tha case.
-        create_payment_group = \
-            create_from_statement or create_from_website or create_from_expense
-        if create_payment_group:
-            company_id = self.env['account.journal'].browse(
-                vals.get('journal_id')).company_id.id
-            payment_group = self.env['account.payment.group'].create({
-                'company_id': company_id,
-                'partner_type': vals.get('partner_type'),
-                'partner_id': vals.get('partner_id'),
-                'payment_date': vals.get('date', fields.Date.context_today(self)),
-                'communication': vals.get('communication'),
-            })
-            vals['payment_group_id'] = payment_group.id
-        if not vals.get('currency_id'):
-            vals['currency_id'] = self.env.user.company_id.currency_id.id
-        if 'payment_type_copy' in vals:
-            vals['payment_type'] = vals['payment_type_copy']
-            del vals['payment_type_copy']
-        if 'destination_journal_id' in vals:
-            del vals['destination_journal_id']
-        payment = super(AccountPayment, self).create(vals)
-        if payment.move_id and payment.currency_id.id != payment.company_id.currency_id.id \
-                and abs(payment.amount_company_currency) > 0:
-            for move_line in payment.move_id.line_ids:
-                if move_line.debit > 0:
-                    move_line.with_context({'check_move_validity': False}).write({'debit': abs(payment.amount_company_currency)})
-                if move_line.credit > 0:
-                    move_line.with_context({'check_move_validity': False}).write({'credit': abs(payment.amount_company_currency)})
-        if create_payment_group:
-            payment.payment_group_id.post()
-        return payment
+
+        for vals in vals_list:
+            if 'journal_id' in vals:
+                journal = self.env['account.journal'].browse(vals.get('journal_id'))
+                if not journal.payment_sequence_id:
+                    raise ValidationError('Debe configurar la secuencia de pagos para %s' % (journal.name))
+                next_name = self.env['ir.sequence'].next_by_code(journal.payment_sequence_id.code)
+                vals['name'] = next_name
+            if counterpart_aml_data or new_aml_dicts:
+                vals.update(self.infer_partner_info(vals))
+
+            # NOTE: This is required at least from POS when we do not have
+            # partner_id and we do not want a payment group in that case.
+            create_payment_group = (
+                create_from_statement and vals.get('partner_type') and vals.get('partner_id')
+                and all(
+                    x['move_line'].account_id.account_type in ['asset_receivable', 'liability_payable']
+                    for x in counterpart_aml_data
+                )
+            ) or create_from_website or create_from_expense
+
+            if create_payment_group:
+                company_id = self.env['account.journal'].browse(vals.get('journal_id')).company_id.id
+                payment_group = self.env['account.payment.group'].create({
+                    'company_id': company_id,
+                    'partner_type': vals.get('partner_type'),
+                    'partner_id': vals.get('partner_id'),
+                    'payment_date': vals.get('date', fields.Date.context_today(self)),
+                    'communication': vals.get('communication'),
+                })
+                vals['payment_group_id'] = payment_group.id
+
+            if not vals.get('currency_id'):
+                vals['currency_id'] = self.env.user.company_id.currency_id.id
+            if 'payment_type_copy' in vals:
+                vals['payment_type'] = vals.pop('payment_type_copy')
+            vals.pop('destination_journal_id', None)
+
+        payments = super(AccountPayment, self).create(vals_list)
+
+        # Por qué: ajuste de importes en moneda de empresa post-creación,
+        # solo cuando la moneda del pago difiere de la moneda de la compañía.
+        for payment in payments:
+            if payment.move_id and payment.currency_id.id != payment.company_id.currency_id.id \
+                    and abs(payment.amount_company_currency) > 0:
+                for move_line in payment.move_id.line_ids:
+                    if move_line.debit > 0:
+                        move_line.with_context({'check_move_validity': False}).write({'debit': abs(payment.amount_company_currency)})
+                    if move_line.credit > 0:
+                        move_line.with_context({'check_move_validity': False}).write({'credit': abs(payment.amount_company_currency)})
+            if payment.payment_group_id and (create_from_website or create_from_expense or create_from_statement):
+                payment.payment_group_id.post()
+
+        return payments
 
     @api.depends('payment_type', 'partner_type', 'partner_id')
     def _compute_destination_account_id(self):
