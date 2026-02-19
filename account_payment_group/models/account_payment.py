@@ -222,14 +222,9 @@ class AccountPayment(models.Model):
 
     @api.constrains('payment_group_id', 'payment_type')
     def check_payment_group(self):
-        # odoo tests don't create payments with payment gorups
-        if self.env.registry.in_test_mode():
-            return True
-        for rec in self:
-            receivable_payable = all([
-                x['move_line'].account_id.account_type in [
-                    'asset_receivable', 'liability_payable']
-                for x in self._context.get('counterpart_aml_dicts', [])])
+        # Por qué: registry.in_test_mode() fue removido en Odoo 19.
+        # El constraint no tiene lógica activa, se mantiene el stub por compatibilidad.
+        return True
 
     @api.model
     def get_amls(self):
