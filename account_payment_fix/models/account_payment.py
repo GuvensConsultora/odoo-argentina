@@ -130,26 +130,23 @@ class AccountPayment(models.Model):
     @api.depends('payment_type', 'partner_type', 'partner_id')
     def _compute_destination_account_id(self):
         """
-        We send with_company on context so payments can be created from parent
-        companies. We try to send force_company on self but it doesnt works, it
-        only works sending it on partner
+        // Por qué: se usa with_company para que property fields resuelvan
+        // la cuenta de la compañía correcta en entornos multi-compañía.
+        // Patrón: iterar con rec (no self) para soportar multi-record compute.
         """
         res = super(AccountPayment, self)._compute_destination_account_id()
-        #for rec in self.filtered(
-        #        lambda x: not x.invoice_line_ids and x.payment_type != 'transfer'):
-        for rec in self.filtered(
-                lambda x: not x.is_internal_transfer):
-            partner = self.partner_id.with_context(
-                with_company=self.company_id.id)
-            partner = self.partner_id
-            if self.partner_type == 'customer':
-                self.destination_account_id = (
-                    partner.property_account_receivable_id.id)
+        for rec in self.filtered(lambda x: not x.is_internal_transfer):
+            # Sin partner, dejamos el fallback que ya seteo el super() estándar
+            if not rec.partner_id:
+                continue
+            partner = rec.partner_id.with_company(rec.company_id)
+            if rec.partner_type == 'customer':
+                rec.destination_account_id = (
+                    partner.property_account_receivable_id)
             else:
-                self.destination_account_id = (
-                    partner.property_account_payable_id.id)
-        #import pdb;pdb.set_trace()
+                rec.destination_account_id = (
+                    partner.property_account_payable_id)
         for rec in self.filtered(lambda x: x.is_internal_transfer):
             if rec.payment_type == 'outbound':
-                self.destination_account_id = rec.journal_id.company_id.transfer_account_id.id
+                rec.destination_account_id = rec.journal_id.company_id.transfer_account_id
         return res

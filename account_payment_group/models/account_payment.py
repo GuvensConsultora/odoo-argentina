@@ -301,6 +301,15 @@ class AccountPayment(models.Model):
         create_from_website = self._context.get('create_from_website', False)
 
         for vals in vals_list:
+            # Por qué: al crear línea de pago desde el payment group, el partner_id
+            # podría no propagarse por contexto (campo invisible en Odoo 19).
+            # Se toma del payment group como fallback para evitar asientos desbalanceados.
+            if vals.get('payment_group_id') and not vals.get('partner_id'):
+                group = self.env['account.payment.group'].browse(vals['payment_group_id'])
+                if group.partner_id:
+                    vals['partner_id'] = group.partner_id.id
+                if group.partner_type and not vals.get('partner_type'):
+                    vals['partner_type'] = group.partner_type
             if 'journal_id' in vals:
                 journal = self.env['account.journal'].browse(vals.get('journal_id'))
                 if not journal.payment_sequence_id:
