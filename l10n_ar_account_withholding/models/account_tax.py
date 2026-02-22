@@ -9,9 +9,10 @@ from datetime import date
 class AccountTax(models.Model):
     _inherit = "account.tax"
 
-    # Por qué: selection_add en vez de redefinir selection completa — evita warning en v19
+    # Por qué: selection_add + ondelete requerido en v19 para campos required
     amount_type = fields.Selection(
         selection_add=[('partner_tax', 'Alicuota en el partner')],
+        ondelete={'partner_tax': 'set default'},
     )
 
     def get_period_payments_domain(self, payment_group):

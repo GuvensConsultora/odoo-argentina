@@ -11,9 +11,10 @@ class AccountTax(models.Model):
 
     afip_code = fields.Char('Codigo AFIP')
     withholding_journal_id = fields.Many2one('account.journal',string='Diario retenciones')
-    # Por qué: selection_add en vez de redefinir selection completa — evita warning en v19
+    # Por qué: selection_add + ondelete requerido en v19 para campos required
     amount_type = fields.Selection(
         selection_add=[('partner_tax', 'Alicuota en el partner')],
+        ondelete={'partner_tax': 'set default'},
     )
 
     def get_period_payments_domain(self, payment_group):
