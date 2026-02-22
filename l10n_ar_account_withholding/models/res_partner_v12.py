@@ -16,7 +16,7 @@ class ResPartner(models.Model):
     _inherit = 'res.partner'
 
     gross_income_number = fields.Char(
-        'Gross Income Number',
+        'Gross Income Number (Withholding)',
         size=64,
     )
     gross_income_type = fields.Selection([
@@ -24,7 +24,7 @@ class ResPartner(models.Model):
         ('local', 'Local'),
         ('no_liquida', 'No Liquida'),
     ],
-        'Gross Income Type',
+        'Gross Income Type (Withholding)',
     )
     gross_income_jurisdiction_ids = fields.Many2many(
         'res.country.state',

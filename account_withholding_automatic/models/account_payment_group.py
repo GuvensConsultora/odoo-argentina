@@ -16,7 +16,7 @@ class AccountPaymentGroup(models.Model):
     withholdable_advanced_amount = fields.Monetary(
         'Adjustment / Advance (untaxed)',
         help='Sometimes used for withholdings calculation',
-        readonly="state != 'draft'",
+        readonly=True,
     )
 
     @api.onchange('unreconciled_amount')

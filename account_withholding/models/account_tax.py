@@ -1,26 +1,20 @@
 from odoo import models, fields, api
 
 
-TYPE_TAX_USE = [
-    ('sale', 'Sales'),
-    ('purchase', 'Purchases'),
-    ('customer', 'Pagos a Clientes'),
-    ('supplier', 'Pagos a Proveedores'),
-    ('none', 'None'),
-]
-
 class AccountTax(models.Model):
     """
     We could also use inherits but we should create methods of chart template
     """
     _inherit = "account.tax"
 
+    # Por qué: selection_add en vez de redefinir — evita warning en v19
     type_tax_use = fields.Selection(
-            TYPE_TAX_USE, 
-            string='Tax Type', 
-            required=True, 
-            default="sale",
-            help="Determines where the tax is selectable. Note : 'None' means a tax can't be used by itself, however it can still be used in a group. 'adjustment' is used to perform tax adjustment.")
+            selection_add=[
+                ('customer', 'Pagos a Clientes'),
+                ('supplier', 'Pagos a Proveedores'),
+            ],
+            ondelete={'customer': 'set default', 'supplier': 'set default'},
+    )
     amount = fields.Float(
         default=0.0,
     )

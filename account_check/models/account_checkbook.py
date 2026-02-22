@@ -47,7 +47,7 @@ class AccountCheckbook(models.Model):
     journal_id = fields.Many2one(
         'account.journal', 'Journal',
         help='Journal where it is going to be used',
-        readonly="state != 'draft'",
+        readonly=True,
         required=True,
         domain=[('type', '=', 'bank')],
         ondelete='cascade',

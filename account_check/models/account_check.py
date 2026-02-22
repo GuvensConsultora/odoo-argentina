@@ -134,20 +134,20 @@ class AccountCheck(models.Model):
     )
     name = fields.Char(
         required=True,
-        readonly="state != 'draft'",
+        readonly=True,
         copy=False,
         index=True,
     )
     number = fields.Integer(
         required=True,
-        readonly="state != 'draft'",
+        readonly=True,
         copy=False,
         index=True,
     )
     checkbook_id = fields.Many2one(
         'account.checkbook',
         'Recibos',
-        readonly="state != 'draft'",
+        readonly=True,
         bypass_search_access=True,
         index=True,
     )
@@ -198,37 +198,37 @@ class AccountCheck(models.Model):
     issue_date = fields.Date(
         'Fecha Emision',
         required=True,
-        readonly="state != 'draft'",
+        readonly=True,
         default=fields.Date.context_today,
     )
     owner_vat = fields.Char(
         'CUIT del Emisor',
-        readonly="state != 'draft'",
+        readonly=True,
     )
     owner_name = fields.Char(
         'Emisor',
-        readonly="state != 'draft'",
+        readonly=True,
     )
     bank_id = fields.Many2one(
         'res.bank', 'Banco',
-        readonly="state != 'draft'",
+        readonly=True,
     )
     amount = fields.Monetary(
         currency_field='currency_id',
-        readonly="state != 'draft'",
+        readonly=True,
     )
     amount_company_currency = fields.Monetary(
         currency_field='company_currency_id',
-        readonly="state != 'draft'",
+        readonly=True,
     )
     currency_id = fields.Many2one(
         'res.currency',
-        readonly="state != 'draft'",
+        readonly=True,
         default=lambda self: self.env.user.company_id.currency_id.id,
         required=True,
     )
     payment_date = fields.Date(
-        readonly="state != 'draft'",
+        readonly=True,
         index=True,
     )
     journal_id = fields.Many2one(
@@ -236,7 +236,7 @@ class AccountCheck(models.Model):
         string='Diario',
         required=True,
         domain=[('type', 'in', ['cash', 'bank'])],
-        readonly="state != 'draft'",
+        readonly=True,
         index=True,
     )
     company_id = fields.Many2one(

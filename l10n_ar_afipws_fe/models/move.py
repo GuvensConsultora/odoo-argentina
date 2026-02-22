@@ -50,7 +50,7 @@ class AccountMove(models.Model):
     )
     document_number = fields.Char(
         copy=False,
-        string='Document Number',
+        string='AFIP Document Number',
         readonly=True
     )
     afip_batch_number = fields.Integer(
@@ -73,17 +73,17 @@ class AccountMove(models.Model):
         ('CAE', 'CAE'), ('CAI', 'CAI'), ('CAEA', 'CAEA')],
         string='AFIP authorization mode',
         copy=False,
-        readonly="state != 'draft'",
+        readonly=True,
     )
     afip_auth_code = fields.Char(
         copy=False,
         string='CAE/CAI/CAEA Code',
-        readonly="state != 'draft'",
+        readonly=True,
         size=24,
     )
     afip_auth_code_due = fields.Date(
         copy=False,
-        readonly="state != 'draft'",
+        readonly=True,
         string='CAE/CAI/CAEA due Date',
     )
     # for compatibility
@@ -100,7 +100,7 @@ class AccountMove(models.Model):
 
     afip_barcode = fields.Char(
         compute='_compute_barcode',
-        string='AFIP Barcode',
+        string='AFIP Barcode (legacy)',
         #store=True
     )
     # backport of v13 for qweb report
@@ -132,7 +132,7 @@ class AccountMove(models.Model):
         ('R', 'Rechazado'),
         ('O', 'Observado')],
         'Resultado',
-        readonly="state != 'draft'",
+        readonly=True,
         copy=False,
         help="AFIP request result"
     )

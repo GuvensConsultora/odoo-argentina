@@ -117,7 +117,7 @@ class AccountMove(models.Model):
         vat_taxable_amount = fields.Float('Base imponible de IVA',compute=_compute_tax_amounts)
         vat_amount = fields.Float('Monto de IVA',compute=_compute_tax_amounts)
         other_taxes_amount = fields.Float('Monto de Otros Impuestos',compute=_compute_tax_amounts)
-        vat_exempt_base_amount = fields.Float('Monto de IVA',compute=_compute_tax_amounts)
+        vat_exempt_base_amount = fields.Float('Monto IVA Exento',compute=_compute_tax_amounts)
         vat_untaxed_base_amount = fields.Float('Monto de IVA no gravado',compute=_compute_tax_amounts)
 
 class AccountMoveTax(models.Model):

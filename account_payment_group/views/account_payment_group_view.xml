@@ -146,8 +146,9 @@
                         <button name="%(action_account_payment_group_invoice_wizard)d" string="+ Debit Note" invisible="state != 'draft'" type="action" />
 			<button name="%(action_account_payment_group_invoice_wizard)d" string="+ Credit Note" invisible="state != 'draft'"
 				context="{'refund': True}" type="action" />
-			<field name="to_pay_move_line_ids" 
-				context="{'list_view_ref': 'account_payment_group.view_move_line_tree'}" 
+			<field name="to_pay_move_line_ids"
+				context="{'list_view_ref': 'account_payment_group.view_move_line_tree'}"
+				readonly="state != 'draft'"
 				domain="[('partner_id.commercial_partner_id', '=', commercial_partner_id),('account_id.account_type', '=', account_internal_type),('account_id.reconcile', '=', True),('reconciled', '=', False),('full_reconcile_id', '=', False)]"/>
                     </page>
                     <!-- no las pudimos hacer invisibles porque nos da error al venir de una factura y querer hacer las to pay lines tmb invisibles. lo bueno de hacerlas invisibles era que al confirmar se pasaba a las payment lines automaticamente -->

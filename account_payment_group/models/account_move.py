@@ -18,7 +18,7 @@ class AccountMove(models.Model):
         help='If you set a journal here, after invoice validation, the invoice'
         ' will be automatically paid with this journal. As manual payment'
         'method is used, only journals with manual method are shown.',
-        readonly="state != 'draft'",
+        readonly=True,
     )
     payment_group_ids = fields.Many2many(
         'account.payment.group',

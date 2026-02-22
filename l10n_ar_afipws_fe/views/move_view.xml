@@ -32,10 +32,11 @@
                         <field name='validation_type' invisible="0"/>
                         <label for="afip_auth_code" string="AFIP authorization"/>
                         <div class="oe_inline">
-                            <field name="afip_auth_mode" class="oe_inline"/>
-			    <field name="afip_auth_code" class="oe_inline" 
-				    required = "afip_auth_mode != False" 
-				    placeholder="Code"/> - 
+                            <field name="afip_auth_mode" class="oe_inline" readonly="state != 'draft'"/>
+			    <field name="afip_auth_code" class="oe_inline"
+				    required = "afip_auth_mode != False"
+				    readonly="state != 'draft'"
+				    placeholder="Code"/> -
                             <field name="afip_auth_verify_result" class="oe_inline"/>
 			    <button name="verify_on_afip" type="object"
 				    invisible="afip_auth_mode == False or afip_auth_verify_type == 'not_available'" 
@@ -43,8 +44,8 @@
                         </div>
 			<field name='afip_auth_verify_observation' 
 				invisible="afip_auth_verify_observation == False"/>
-                        <field name='afip_auth_code_due'/>
-                        <field name='afip_result'/>
+                        <field name='afip_auth_code_due' readonly="state != 'draft'"/>
+                        <field name='afip_result' readonly="state != 'draft'"/>
                         <field name='afip_message'/>
                         <field name='afip_xml_request' groups="base.group_no_one"/>
                         <field name='afip_xml_response' groups="base.group_no_one"/>

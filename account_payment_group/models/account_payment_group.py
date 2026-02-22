@@ -197,7 +197,7 @@ class AccountPaymentGroup(models.Model):
         help='This lines are the ones the user has selected to be paid.',
         copy=False,
         domain=move_lines_domain,
-        readonly="state != 'draft'",
+        readonly=True,
         # auto_join not yet implemented for m2m. TODO enable when implemented
         # https://github.com/odoo/odoo/blob/master/odoo/osv/expression.py#L899
         # bypass_search_access=True,
@@ -232,7 +232,7 @@ class AccountPaymentGroup(models.Model):
         'payment_group_id',
         string='Lineas de Pago',
         copy=False,
-        readonly="state not in ('draft', 'confirmed')",
+        readonly=True,
         bypass_search_access=True,
     )
     account_internal_type = fields.Char(
