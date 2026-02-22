@@ -134,23 +134,20 @@ class AccountCheck(models.Model):
     )
     name = fields.Char(
         required=True,
-        readonly=True,
+        readonly="state != 'draft'",
         copy=False,
-        states={'draft': [('readonly', False)]},
         index=True,
     )
     number = fields.Integer(
         required=True,
-        readonly=True,
-        states={'draft': [('readonly', False)]},
+        readonly="state != 'draft'",
         copy=False,
         index=True,
     )
     checkbook_id = fields.Many2one(
         'account.checkbook',
         'Recibos',
-        readonly=True,
-        states={'draft': [('readonly', False)]},
+        readonly="state != 'draft'",
         bypass_search_access=True,
         index=True,
     )
@@ -201,45 +198,37 @@ class AccountCheck(models.Model):
     issue_date = fields.Date(
         'Fecha Emision',
         required=True,
-        readonly=True,
-        states={'draft': [('readonly', False)]},
+        readonly="state != 'draft'",
         default=fields.Date.context_today,
     )
     owner_vat = fields.Char(
         'CUIT del Emisor',
-        readonly=True,
-        states={'draft': [('readonly', False)]}
+        readonly="state != 'draft'",
     )
     owner_name = fields.Char(
         'Emisor',
-        readonly=True,
-        states={'draft': [('readonly', False)]}
+        readonly="state != 'draft'",
     )
     bank_id = fields.Many2one(
         'res.bank', 'Banco',
-        readonly=True,
-        states={'draft': [('readonly', False)]}
+        readonly="state != 'draft'",
     )
     amount = fields.Monetary(
         currency_field='currency_id',
-        readonly=True,
-        states={'draft': [('readonly', False)]}
+        readonly="state != 'draft'",
     )
     amount_company_currency = fields.Monetary(
         currency_field='company_currency_id',
-        readonly=True,
-        states={'draft': [('readonly', False)]},
+        readonly="state != 'draft'",
     )
     currency_id = fields.Many2one(
         'res.currency',
-        readonly=True,
-        states={'draft': [('readonly', False)]},
+        readonly="state != 'draft'",
         default=lambda self: self.env.user.company_id.currency_id.id,
         required=True,
     )
     payment_date = fields.Date(
-        readonly=True,
-        states={'draft': [('readonly', False)]},
+        readonly="state != 'draft'",
         index=True,
     )
     journal_id = fields.Many2one(
@@ -247,8 +236,7 @@ class AccountCheck(models.Model):
         string='Diario',
         required=True,
         domain=[('type', 'in', ['cash', 'bank'])],
-        readonly=True,
-        states={'draft': [('readonly', False)]},
+        readonly="state != 'draft'",
         index=True,
     )
     company_id = fields.Many2one(

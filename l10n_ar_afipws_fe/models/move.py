@@ -73,23 +73,18 @@ class AccountMove(models.Model):
         ('CAE', 'CAE'), ('CAI', 'CAI'), ('CAEA', 'CAEA')],
         string='AFIP authorization mode',
         copy=False,
-        readonly=True,
-        states={'draft': [('readonly', False)]},
+        readonly="state != 'draft'",
     )
     afip_auth_code = fields.Char(
         copy=False,
         string='CAE/CAI/CAEA Code',
-        readonly=True,
-        oldname='afip_cae',
+        readonly="state != 'draft'",
         size=24,
-        states={'draft': [('readonly', False)]},
     )
     afip_auth_code_due = fields.Date(
         copy=False,
-        readonly=True,
-        oldname='afip_cae_due',
+        readonly="state != 'draft'",
         string='CAE/CAI/CAEA due Date',
-        states={'draft': [('readonly', False)]},
     )
     # for compatibility
     afip_cae = fields.Char(
@@ -137,8 +132,7 @@ class AccountMove(models.Model):
         ('R', 'Rechazado'),
         ('O', 'Observado')],
         'Resultado',
-        readonly=True,
-        states={'draft': [('readonly', False)]},
+        readonly="state != 'draft'",
         copy=False,
         help="AFIP request result"
     )

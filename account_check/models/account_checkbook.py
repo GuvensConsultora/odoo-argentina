@@ -47,12 +47,11 @@ class AccountCheckbook(models.Model):
     journal_id = fields.Many2one(
         'account.journal', 'Journal',
         help='Journal where it is going to be used',
-        readonly=True,
+        readonly="state != 'draft'",
         required=True,
         domain=[('type', '=', 'bank')],
         ondelete='cascade',
         context={'default_type': 'bank'},
-        states={'draft': [('readonly', False)]},
         bypass_search_access=True,
     )
     range_to = fields.Integer(
