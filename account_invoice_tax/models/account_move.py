@@ -17,8 +17,10 @@ class AccountMove(models.Model):
         """ Computed field used for custom widget's rendering.
             Only set on invoices.
         """
-        for move in self:
-            super(AccountMove, move.with_context(
-                tax_list_origin=move._origin.mapped('invoice_line_ids.tax_ids'),
-                tax_total_origin=move._origin.tax_totals)
-            )._compute_tax_totals()
+        # Por qué: El override original pasaba tax_total_origin=move._origin.tax_totals
+        #          en contexto, lo que causa: (1) recursión en el compute, (2) el método
+        #          _prepare_tax_totals retorna un dict sin las keys Enterprise
+        #          (amount_company_currency, etc.), crasheando el template de factura.
+        # Tip: Dejamos que el compute nativo de Odoo 19 Enterprise genere el dict
+        #       completo sin interferencia de contexto.
+        return super()._compute_tax_totals()
