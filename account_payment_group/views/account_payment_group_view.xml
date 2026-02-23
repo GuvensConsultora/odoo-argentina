@@ -8,7 +8,7 @@
     <field name="name">account.payment.group.tree</field>
     <field name="model">account.payment.group</field>
     <field name="arch" type="xml">
-        <list decoration-info="state=='draft'" decoration-muted="state in ['reconciled', 'cancel']">
+        <tree decoration-info="state=='draft'" decoration-muted="state in ['reconciled', 'cancel']">
 	    <field name="payment_date"/>
 	    <field name="display_name"/>
             <!-- <field name="name"/> -->
@@ -19,7 +19,7 @@
             <field name="company_id" groups="base.group_multi_company"/>
             <field name="currency_id" invisible="1"/>
             <field name="partner_type" invisible="1"/>
-        </list>
+        </tree>
     </field>
 </record>
 

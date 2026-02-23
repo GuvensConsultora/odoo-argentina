@@ -8,9 +8,9 @@
             <field name="model">account.payment</field>
             <field name="inherit_id" ref="account.view_account_payment_tree"/>
             <field name="arch" type="xml"> 
-                <list>
+                <tree>
                     <field name="payment_method_code" invisible="1"/>
-                </list>
+                </tree>
             </field>
         </record>
 
@@ -20,9 +20,9 @@
             <field name="model">account.payment</field>
             <field name="inherit_id" ref="account_payment_group.view_account_payment_from_group_tree"/>
             <field name="arch" type="xml"> 
-                <list>
+                <tree>
                     <field name="payment_method_code" invisible="1"/>
-                </list>
+                </tree>
             </field>
         </record>   
 

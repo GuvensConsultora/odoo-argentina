@@ -52,13 +52,13 @@
             <notebook>
                     <page string='Secuencias' groups="base.group_no_one">
                             <field name="sequences" >
-                                    <list>
+                                    <tree>
                                             <field name="name" />
                                             <field name="code" />
                                             <field name="l10n_latam_document_type_id" />
                                             <!-- button name="l10n_latam_document_type_id" 
                                                     type="object" string="Consultar comprobante"/ -->
-                                    </list>
+                                    </tree>
                             </field>
                     </page>
             </notebook>

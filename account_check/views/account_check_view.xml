@@ -7,7 +7,7 @@
         <field name="model">account.check</field>
         <field name="priority">100</field>
         <field name="arch" type="xml">
-            <list create="false" string="Checks">
+            <tree create="false" string="Checks">
                 <field name="checkbook_id" invisible="context.get('default_type',False) != 'issue_check'"/>
                 <field name="journal_id" invisible="1"/>
                 <field name="name"/>
@@ -22,7 +22,7 @@
                 <field name="state"/>
                 <field name="owner_name" invisible="context.get('default_type',False) != 'third_check'"/>
                 <field name="currency_id" invisible="1"/>
-            </list>
+            </tree>
         </field>
     </record>
 
@@ -84,12 +84,12 @@
                 </group>
 		<group string="Operations">
                     <field name="operation_ids" nolabel="True" readonly="True">
-                        <list create="False" edit="False" delete="False">
+                        <tree create="False" edit="False" delete="False">
                             <field name="date"/>
                             <field name="operation"/>
                             <field name="origin_name" string="Origin"/>
                             <field name="partner_id"/>
-                        </list>
+                        </tree>
                     </field>
                 </group>
             </sheet>    

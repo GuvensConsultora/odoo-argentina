@@ -57,10 +57,10 @@
                     <notebook>
                         <page string="Ceritificados">
 				<field name="certificate_ids">
-					<list>
+					<tree>
 						<field name="create_date" />
 						<field name="state" />
-					</list>
+					</tree>
 				</field>
                         </page>
                         <page string="Key" groups="base.group_no_one">
@@ -76,12 +76,12 @@
         <field name="name">afipws.certificate_alias.tree</field>
         <field name="model">afipws.certificate_alias</field>
         <field name="arch" type="xml">
-            <list string="Certificados AFIP">
+            <tree string="Certificados AFIP">
                 <field name="type"/>
                 <field name="common_name"/>
                 <field name="company_id"/>
                 <field name="state"/>
-            </list>
+            </tree>
         </field>
     </record>
 

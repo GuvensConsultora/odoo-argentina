@@ -6,13 +6,13 @@
             <field name='name'>Account VAT Ledger</field> 
             <field name="model">account.vat.ledger</field>
             <field name='arch' type='xml'>
-                <list string="VAT Ledger">
+                <tree string="VAT Ledger">
                     <field name="name"/>
                     <field name="company_id" groups="base.group_multi_company"/>
                     <field name="date_from"/>
                     <field name="date_to"/>
                     <field name="state"/>
-                </list>
+                </tree>
             </field>
         </record>
 

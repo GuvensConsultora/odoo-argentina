@@ -34,8 +34,8 @@
     <field name="name">account.payment.tree</field>
     <field name="model">account.payment</field>
     <field name="arch" type="xml">
-        <list>
-        <!-- <list decoration-info="state=='draft'" decoration-muted="state=='reconciled'"> -->
+        <tree>
+        <!-- <tree decoration-info="state=='draft'" decoration-muted="state=='reconciled'"> -->
             <!-- <field name="payment_date"/> -->
             <field name="name"/>
             <field name="journal_id"/>
@@ -52,7 +52,7 @@
             <field name="company_currency_id" optional="hide"/>
             <field name="partner_type" optional="hide"/>
             <button icon="fa-pencil" type="object" invisible="state == 'draft'" name="show_details" string="Detalles"/>
-        </list>
+        </tree>
     </field>
 </record>
 
@@ -151,9 +151,9 @@
         <field name="model">account.payment</field>
         <field name="inherit_id" ref="account.view_account_payment_tree"/>
         <field name="arch" type="xml">
-            <list position="attributes">
+            <tree position="attributes">
                 <attribute name="create">false</attribute>
-            </list>
+            </tree>
         </field>
     </record>
 
@@ -197,9 +197,9 @@
         <field name="mode">primary</field>
         <field name="arch" type="xml">
             <!-- we need to re enable this, we could not achive to inherit later than the modification for no transfers -->
-            <list position="attributes">
+            <tree position="attributes">
                 <attribute name="create">true</attribute>
-            </list>
+            </tree>
             <!-- field name="partner_id" position="replace">
                 <field name="destination_journal_id"/>
             </field -->

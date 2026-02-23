@@ -7,7 +7,7 @@
     <field name="model">account.move.line</field>
     <field eval="99" name="priority"/>
     <field name="arch" type="xml">
-         <list string="Journal Items" edit="1" delete="1">
+         <tree string="Journal Items" edit="1" delete="1">
             <field name="date"/>
             <field name="date_maturity" optional="hide"/>
             <field name="move_id" required="0"/>
@@ -22,7 +22,7 @@
             <field name="amount_residual_currency" groups="base.group_multi_currency" optional="hide"/>
             <field name="currency_id" invisible="1 == 1"/>
             <field name="company_id" invisible="1 == 1"/>
-        </list>
+        </tree>
     </field>
 </record>
 

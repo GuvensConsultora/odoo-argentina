@@ -19,10 +19,10 @@
         <field name="name">afip.activity.list</field>
         <field name="model">afip.activity</field>
         <field name="arch" type="xml">
-            <list string="AFIP activity">
+            <tree string="AFIP activity">
                 <field name="name"/>
                 <field name="code"/>
-            </list>
+            </tree>
         </field>
     </record>
 

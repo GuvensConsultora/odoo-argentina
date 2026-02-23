@@ -27,14 +27,14 @@
         <field name="name">afipws.auth.tree</field>
         <field name="model">afipws.connection</field>
         <field name="arch" type="xml">
-            <list string="AFIP Connector" create="false" edit="false">
+            <tree string="AFIP Connector" create="false" edit="false">
                 <field name="afip_ws"/>
                 <field name="type"/>
                 <field name="uniqueid"/>
                 <field name="generationtime"/>
                 <field name="expirationtime"/>
                 <field name="company_id"/>
-            </list>
+            </tree>
         </field>
     </record>
 

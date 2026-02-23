@@ -20,13 +20,13 @@
             <field name="name">afip.tabla_ganancias.escala.list</field>
             <field name="model">afip.tabla_ganancias.escala</field>
             <field name="arch" type="xml">
-	  	<list string="AFIP tax" editable="top">
+	  	<tree string="AFIP tax" editable="top">
                     <field name="importe_desde"/>
                     <field name="importe_hasta"/>
                     <field name="importe_fijo"/>
                     <field name="porcentaje"/>
                     <field name="importe_excedente"/>
-                </list>
+                </tree>
             </field>
         </record>
 
