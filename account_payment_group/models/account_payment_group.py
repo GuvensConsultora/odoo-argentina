@@ -551,14 +551,13 @@ class AccountPaymentGroup(models.Model):
             #rec.matched_move_line_ids = lines - payment_lines
             rec.matched_move_line_ids = res
 
-    # @api.depends('payment_ids.move_line_ids')
-    @api.depends('payment_ids.invoice_ids')
+    # Por qué: Odoo 19 renombró invoice_ids → reconciled_invoice_ids
+    @api.depends('payment_ids.reconciled_invoice_ids')
     def _compute_move_lines(self):
         for rec in self:
             ids = []
-            # rec.move_line_ids = rec.payment_ids.mapped('invoice_line_ids')
             for payment in rec.payment_ids:
-                for inv in payment.invoice_ids:
+                for inv in payment.reconciled_invoice_ids:
                     for line in inv.line_ids:
                         if line.account_id.account_type in ['asset_receivable','liability_payable']:
                             ids.append(line.id)
