@@ -191,7 +191,6 @@ class AccountPaymentGroup(models.Model):
         # lo hacemos readonly por vista y no por aca porque el relatd si no
         # no funcionaba bien
         readonly=True,
-        states={'draft': [('readonly', False)]},
         # auto_join not yet implemented for m2m. TODO enable when implemented
         # https://github.com/odoo/odoo/blob/master/odoo/osv/expression.py#L899
         # auto_join=True,
@@ -225,12 +224,8 @@ class AccountPaymentGroup(models.Model):
         'account.payment',
         'payment_group_id',
         string='Lineas de Pago',
-        ondelete='cascade',
         copy=False,
         readonly=True,
-        states={
-            'draft': [('readonly', False)],
-            'confirmed': [('readonly', False)]},
         auto_join=True,
     )
     account_internal_type = fields.Char(

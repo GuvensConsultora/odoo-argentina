@@ -15,12 +15,14 @@ class AccountTax(models.Model):
     """
     _inherit = "account.tax"
 
+    # Por qué: selection_add agrega opciones sin pisar las del core
     type_tax_use = fields.Selection(
-            TYPE_TAX_USE, 
-            string='Tax Type', 
-            required=True, 
-            default="sale",
-            help="Determines where the tax is selectable. Note : 'None' means a tax can't be used by itself, however it can still be used in a group. 'adjustment' is used to perform tax adjustment.")
+            selection_add=[
+                ('customer', 'Pagos a Clientes'),
+                ('supplier', 'Pagos a Proveedores'),
+            ],
+            ondelete={'customer': 'set default', 'supplier': 'set default'},
+    )
     amount = fields.Float(
         default=0.0,
     )

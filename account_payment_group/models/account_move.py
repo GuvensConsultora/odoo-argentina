@@ -19,7 +19,6 @@ class AccountMove(models.Model):
         ' will be automatically paid with this journal. As manual payment'
         'method is used, only journals with manual method are shown.',
         readonly=True,
-        states={'draft': [('readonly', False)]},
     )
     payment_group_ids = fields.Many2many(
         'account.payment.group',

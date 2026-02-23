@@ -9,18 +9,11 @@ from datetime import date
 class AccountTax(models.Model):
     _inherit = "account.tax"
 
-    amount_type = fields.Selection(default='percent', string="Tax Computation", required=True,
-        selection=[('group', 'Group of Taxes'), ('fixed', 'Fixed'), ('percent', 'Percentage of Price'), ('division', 'Percentage of Price Tax Included'),('partner_tax','Alicuota en el partner')],
-        help="""
-    - Group of Taxes: The tax is a set of sub taxes.
-    - Fixed: The tax amount stays the same whatever the price.
-    - Percentage of Price: The tax amount is a % of the price:
-        e.g 100 * (1 + 10%) = 110 (not price included)
-        e.g 110 / (1 + 10%) = 100 (price included)
-    - Percentage of Price Tax Included: The tax amount is a division of the price:
-        e.g 180 / (1 - 10%) = 200 (not price included)
-        e.g 200 * (1 - 10%) = 180 (price included)
-        """)
+    # Por qué: selection_add agrega 'partner_tax' sin pisar las opciones del core
+    amount_type = fields.Selection(
+        selection_add=[('partner_tax', 'Alicuota en el partner')],
+        ondelete={'partner_tax': 'set default'},
+    )
 
     def get_period_payments_domain(self, payment_group):
         previos_payment_groups_domain, previos_payments_domain = super(

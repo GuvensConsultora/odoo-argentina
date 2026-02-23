@@ -24,19 +24,20 @@ class AfipwsConnection(models.Model):
     #    setdefault='wsfe',
     #    ondelete='cascade')
 
-    afip_ws = fields.Selection([
-        ('wsfe', 'Mercado interno -sin detalle- RG2485 (WSFEv1)'),
-        ('wsmtxca', 'Mercado interno -con detalle- RG2904 (WSMTXCA)'),
-        ('wsfex', 'Exportación -con detalle- RG2758 (WSFEXv1)'),
-        ('wsbfe', 'Bono Fiscal -con detalle- RG2557 (WSBFE)'),
-        ('wscdc', 'Constatación de Comprobantes (WSCDC)'),
-        ('ws_sr_padron_a4', 'Servicio de Consulta de Padrón Alcance 4'),
-        ('ws_sr_padron_a5', 'Servicio de Consulta de Padrón Alcance 5'),
-        ('ws_sr_padron_a10', 'Servicio de Consulta de Padrón Alcance 10'),
-        ('ws_sr_padron_a100', 'Servicio de Consulta de Padrón Alcance 100'),
-    ],
-    'AFIP WS',
-    required=True,
+    # Por qué: selection_add agrega opciones sin pisar las del modelo base
+    afip_ws = fields.Selection(
+        selection_add=[
+            ('wsfe', 'Mercado interno -sin detalle- RG2485 (WSFEv1)'),
+            ('wsmtxca', 'Mercado interno -con detalle- RG2904 (WSMTXCA)'),
+            ('wsfex', 'Exportación -con detalle- RG2758 (WSFEXv1)'),
+            ('wsbfe', 'Bono Fiscal -con detalle- RG2557 (WSBFE)'),
+            ('wscdc', 'Constatación de Comprobantes (WSCDC)'),
+        ],
+        ondelete={
+            'wsfe': 'set default', 'wsmtxca': 'set default',
+            'wsfex': 'set default', 'wsbfe': 'set default',
+            'wscdc': 'set default',
+        },
     )
 
 
