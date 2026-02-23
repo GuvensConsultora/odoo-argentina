@@ -73,7 +73,7 @@
     <record id="account_padron_action" model="ir.actions.act_window">
         <field name="name">Padron</field>
         <field name="res_model">account.padron</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">tree,form</field>
     </record>
 
     <menuitem
