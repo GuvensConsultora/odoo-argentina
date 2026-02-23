@@ -39,10 +39,10 @@
         <field name="name">afipws.certificate.tree</field>
         <field name="model">afipws.certificate</field>
         <field name="arch" type="xml">
-            <tree string="Certificados AFIP">
+            <list string="Certificados AFIP">
                 <field name="create_date"/>
                 <field name="state"/>
-            </tree>
+            </list>
         </field>
     </record>
 </odoo>

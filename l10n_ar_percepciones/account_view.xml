@@ -41,11 +41,11 @@
         	            <group colspan="4" col="4">
                 	        <group colspan="4">
                         	    <field colspan="2" name="perception_ids" nolabel="1">
-					<tree string="Perceptions/Retenciones a Aplicar" editable="bottom">
+					<list string="Perceptions/Retenciones a Aplicar" editable="bottom">
                 	                    <field name="tax_id" />
 					    <field name="percent"/>
 					    <field name="date_from" />
-	                                </tree>	
+	                                </list>	
         	                    </field>
                 	        </group>
 	                    </group>
@@ -59,13 +59,13 @@
             <field name="name">re.account.padron.tree</field>
             <field name="model">account.padron</field>
             <field name="arch" type="xml">
-                <tree string="Padron">
+                <list string="Padron">
                         <field name="date_from" />
                         <field name="date_to" />
                         <field name="tax" />
                         <field name="cuit" />
                         <field name="percent" />
-                </tree>
+                </list>
              </field>
         </record>
 
@@ -73,7 +73,7 @@
     <record id="account_padron_action" model="ir.actions.act_window">
         <field name="name">Padron</field>
         <field name="res_model">account.padron</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
     </record>
 
     <menuitem
