@@ -2,7 +2,7 @@
 # El módulo original fue removido pero queda como installed en la DB
 {
     'name': 'Custom Template (deprecated)',
-    'version': '19.0.1.0.0',
+    'version': '1.0.0',
     'category': 'Hidden',
     'summary': 'Stub - module removed in Odoo 19 upgrade',
     'depends': ['base'],

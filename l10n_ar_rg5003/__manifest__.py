@@ -1,6 +1,6 @@
 {
     "name": "l10n_ar_rg5300",
-    'version': '19.0.1.3.0',
+    'version': '1.3.0',
     'category': 'Localization/Argentina',
     'sequence': 14,
     'license': 'AGPL-3',

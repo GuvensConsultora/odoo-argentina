@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html).
 {
     'name': 'Padron ARBA',
-    'version': '19.0.1.0.0',
+    'version': '1.0.0',
     'category': 'Accounting',
     'summary': "Padron de ARBA",
     'depends': ['l10n_ar_percepciones'],

@@ -45,5 +45,5 @@
     'installable': True,
     'name': 'Argentina - Retenciones automtaicas en pagos',
     'test': [],
-    'version': '19.0.1.8.0',
+    'version': '1.8.0',
 }
