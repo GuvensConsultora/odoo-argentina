@@ -44,6 +44,14 @@ class IrSequence(models.Model):
 class AccountMove(models.Model):
     _inherit = "account.move"
 
+    # Por qué: invoice_currency_rate existía en account.move de Odoo ≤17,
+    #          removido en Odoo 19. Se necesita para WSFE y QR AFIP.
+    invoice_currency_rate = fields.Float(
+        string='Invoice Currency Rate',
+        readonly=True,
+        copy=False,
+        help='Cotización de moneda al momento de validar en AFIP',
+    )
     afip_mypyme_sca_adc = fields.Selection(selection=[('SCA','Sistema Circulacion Abierta'),('ADC','Agente Deposito Colectivo')],string='SCA o ADC',default='SCA')
     afip_auth_verify_type = fields.Selection(
         related='company_id.afip_auth_verify_type',
