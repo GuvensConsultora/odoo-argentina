@@ -120,19 +120,20 @@
     <record model="afip.tabla_ganancias.alicuotasymontos" id="regimen_14">
         <field name="anexo_referencia">Anexo ll, inc. k)</field>
         <field name="codigo_de_regimen">116 I</field>
-        <field name="concepto_referencia">Honorarios de director de sociedades anónimas,  síndico fiduciario,  consejero de sociedades cooperativas integrante de consejos de vigilancia y socios administradores de las sociedades de responsabilidad limitada, en comandita simple y en comandita por acciones.</field>
+        <field name="concepto_referencia">Honorarios de director de sociedades anónimas, síndico fiduciario, consejero de sociedades cooperativas integrante de consejos de vigilancia y socios administradores de las sociedades de responsabilidad limitada, en comandita simple y en comandita por acciones.</field>
         <field name="porcentaje_inscripto">-1</field>
         <field name="porcentaje_no_inscripto">28</field>
         <field name="montos_no_sujetos_a_retencion">67170</field>
     </record>
 
+    <!-- Régimen 116 II: solo directores/síndicos (distinguido del nuevo 119 para profesionales) -->
     <record model="afip.tabla_ganancias.alicuotasymontos" id="regimen_15">
         <field name="anexo_referencia">Anexo ll, inc. k)</field>
         <field name="codigo_de_regimen">116 II</field>
-        <field name="concepto_referencia">Profesionales liberales, oficios, albacea, mandatario, gestor de negocio.</field>
+        <field name="concepto_referencia">Directores de SA, síndicos y administradores de SRL (no profesionales liberales - ver régimen 119).</field>
         <field name="porcentaje_inscripto">-1</field>
         <field name="porcentaje_no_inscripto">28</field>
-        <field name="montos_no_sujetos_a_retencion">16830</field>
+        <field name="montos_no_sujetos_a_retencion">67170</field>
     </record>
 
     <record model="afip.tabla_ganancias.alicuotasymontos" id="regimen_16">
@@ -225,80 +226,164 @@
         <field name="montos_no_sujetos_a_retencion">1000</field>
     </record>
 
+    <!-- Régimen 119: Profesionales liberales (RG 5423/2023) — escala propia -->
+    <record model="afip.tabla_ganancias.alicuotasymontos" id="regimen_119">
+        <field name="anexo_referencia">RG 5423/2023</field>
+        <field name="codigo_de_regimen">119</field>
+        <field name="concepto_referencia">Profesiones liberales, oficios, albacea, mandatario, gestor de negocio (RG 5423/2023 - honorarios profesionales).</field>
+        <field name="porcentaje_inscripto">-1</field>
+        <field name="porcentaje_no_inscripto">28</field>
+        <field name="montos_no_sujetos_a_retencion">160000</field>
+    </record>
+
 <!--
-    Regimenes ganancia sobre ESCALA:
+    Escala general RG 830 (8 tramos) — regimen_id = False
+    Aplica a regímenes 110, 25, 116 I, 116 II, 124 que usan porcentaje_inscripto = -1
+    y no tienen escala propia.
 -->
 
     <record model="afip.tabla_ganancias.escala" id="escala_1">
         <field name="importe_desde">0</field>
-        <field name="importe_hasta">1600000</field>
+        <field name="importe_hasta">5000</field>
         <field name="importe_fijo">0</field>
-        <field name="porcentaje">0</field>
-        <field name="importe_excedente">1600000</field>
+        <field name="porcentaje">5</field>
+        <field name="importe_excedente">0</field>
     </record>
 
     <record model="afip.tabla_ganancias.escala" id="escala_2">
-        <field name="importe_desde">1600000</field>
-        <field name="importe_hasta">1744000</field>
-        <field name="importe_fijo">0</field>
+        <field name="importe_desde">5000</field>
+        <field name="importe_hasta">10000</field>
+        <field name="importe_fijo">250</field>
         <field name="porcentaje">9</field>
-        <field name="importe_excedente">1600000</field>
+        <field name="importe_excedente">5000</field>
     </record>
 
     <record model="afip.tabla_ganancias.escala" id="escala_3">
-        <field name="importe_desde">1744000</field>
-        <field name="importe_hasta">1883520</field>
-        <field name="importe_fijo">12960</field>
+        <field name="importe_desde">10000</field>
+        <field name="importe_hasta">15000</field>
+        <field name="importe_fijo">700</field>
         <field name="porcentaje">12</field>
-        <field name="importe_excedente">1744000</field>
+        <field name="importe_excedente">10000</field>
     </record>
 
     <record model="afip.tabla_ganancias.escala" id="escala_4">
-	<field name="importe_desde">1883520</field>
-        <field name="importe_hasta">2015366.40</field>
-        <field name="importe_fijo">29702.40</field>
+        <field name="importe_desde">15000</field>
+        <field name="importe_hasta">20000</field>
+        <field name="importe_fijo">1300</field>
         <field name="porcentaje">15</field>
-        <field name="importe_excedente">1883520</field>
+        <field name="importe_excedente">15000</field>
     </record>
 
     <record model="afip.tabla_ganancias.escala" id="escala_5">
-        <field name="importe_desde">2015366.40</field>
-        <field name="importe_hasta">2136288.39</field>
-        <field name="importe_fijo">49479.36</field>
+        <field name="importe_desde">20000</field>
+        <field name="importe_hasta">30000</field>
+        <field name="importe_fijo">2050</field>
         <field name="porcentaje">19</field>
-        <field name="importe_excedente">2015366.40</field>
+        <field name="importe_excedente">20000</field>
     </record>
 
     <record model="afip.tabla_ganancias.escala" id="escala_6">
-        <field name="importe_desde">2136288.39</field>
-        <field name="importe_hasta">2243102.80</field>
-        <field name="importe_fijo">72454.54</field>
+        <field name="importe_desde">30000</field>
+        <field name="importe_hasta">40000</field>
+        <field name="importe_fijo">3950</field>
         <field name="porcentaje">23</field>
-        <field name="importe_excedente">2136288.39</field>
+        <field name="importe_excedente">30000</field>
     </record>
 
     <record model="afip.tabla_ganancias.escala" id="escala_7">
-        <field name="importe_desde">2243102.80</field>
-        <field name="importe_hasta">2332826.91</field>
-        <field name="importe_fijo">97021.85</field>
+        <field name="importe_desde">40000</field>
+        <field name="importe_hasta">60000</field>
+        <field name="importe_fijo">6250</field>
         <field name="porcentaje">27</field>
-        <field name="importe_excedente">2243102.80</field>
+        <field name="importe_excedente">40000</field>
     </record>
 
     <record model="afip.tabla_ganancias.escala" id="escala_8">
-        <field name="importe_desde">2332826.91</field>
-        <field name="importe_hasta">2402811.73</field>
-        <field name="importe_fijo">121247.36</field>
+        <field name="importe_desde">60000</field>
+        <field name="importe_hasta">9999999999</field>
+        <field name="importe_fijo">11650</field>
         <field name="porcentaje">31</field>
-        <field name="importe_excedente">2332826.91</field>
+        <field name="importe_excedente">60000</field>
     </record>
 
-    <record model="afip.tabla_ganancias.escala" id="escala_9">
-        <field name="importe_desde">2402811.73</field>
+    <!-- Eliminar escala_9 vieja (sobrante) -->
+    <delete model="afip.tabla_ganancias.escala" id="escala_9"/>
+
+<!--
+    Escala RG 5423/2023 para régimen 119 (8 tramos) — regimen_id = regimen_119
+    Escala específica para honorarios profesionales.
+-->
+
+    <record model="afip.tabla_ganancias.escala" id="escala_119_1">
+        <field name="regimen_id" ref="regimen_119"/>
+        <field name="importe_desde">0</field>
+        <field name="importe_hasta">71000</field>
+        <field name="importe_fijo">0</field>
+        <field name="porcentaje">5</field>
+        <field name="importe_excedente">0</field>
+    </record>
+
+    <record model="afip.tabla_ganancias.escala" id="escala_119_2">
+        <field name="regimen_id" ref="regimen_119"/>
+        <field name="importe_desde">71000</field>
+        <field name="importe_hasta">142000</field>
+        <field name="importe_fijo">3550</field>
+        <field name="porcentaje">9</field>
+        <field name="importe_excedente">71000</field>
+    </record>
+
+    <record model="afip.tabla_ganancias.escala" id="escala_119_3">
+        <field name="regimen_id" ref="regimen_119"/>
+        <field name="importe_desde">142000</field>
+        <field name="importe_hasta">213000</field>
+        <field name="importe_fijo">9940</field>
+        <field name="porcentaje">12</field>
+        <field name="importe_excedente">142000</field>
+    </record>
+
+    <record model="afip.tabla_ganancias.escala" id="escala_119_4">
+        <field name="regimen_id" ref="regimen_119"/>
+        <field name="importe_desde">213000</field>
+        <field name="importe_hasta">284000</field>
+        <field name="importe_fijo">18460</field>
+        <field name="porcentaje">15</field>
+        <field name="importe_excedente">213000</field>
+    </record>
+
+    <record model="afip.tabla_ganancias.escala" id="escala_119_5">
+        <field name="regimen_id" ref="regimen_119"/>
+        <field name="importe_desde">284000</field>
+        <field name="importe_hasta">426000</field>
+        <field name="importe_fijo">29110</field>
+        <field name="porcentaje">19</field>
+        <field name="importe_excedente">284000</field>
+    </record>
+
+    <record model="afip.tabla_ganancias.escala" id="escala_119_6">
+        <field name="regimen_id" ref="regimen_119"/>
+        <field name="importe_desde">426000</field>
+        <field name="importe_hasta">568000</field>
+        <field name="importe_fijo">56090</field>
+        <field name="porcentaje">23</field>
+        <field name="importe_excedente">426000</field>
+    </record>
+
+    <record model="afip.tabla_ganancias.escala" id="escala_119_7">
+        <field name="regimen_id" ref="regimen_119"/>
+        <field name="importe_desde">568000</field>
+        <field name="importe_hasta">852000</field>
+        <field name="importe_fijo">88750</field>
+        <field name="porcentaje">27</field>
+        <field name="importe_excedente">568000</field>
+    </record>
+
+    <record model="afip.tabla_ganancias.escala" id="escala_119_8">
+        <field name="regimen_id" ref="regimen_119"/>
+        <field name="importe_desde">852000</field>
         <field name="importe_hasta">9999999999</field>
-        <field name="importe_fijo">142942.65</field>
-        <field name="porcentaje">35</field>
-        <field name="importe_excedente">2402811.73</field>
+        <field name="importe_fijo">165430</field>
+        <field name="porcentaje">31</field>
+        <field name="importe_excedente">852000</field>
     </record>
 
 </odoo>

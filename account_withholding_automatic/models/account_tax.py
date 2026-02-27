@@ -193,7 +193,9 @@ result = withholdable_base_amount * 0.10
                 journal = None
                 for jour in journals:
                     for outbound_payment_method in jour.outbound_payment_method_line_ids:
-                        if payment_method.id == payment_method.id:
+                        # Por qué: el bug original comparaba payment_method.id == payment_method.id
+                        # (siempre True) → tomaba el primer journal cash sin importar el método
+                        if outbound_payment_method.payment_method_id.id == payment_method.id:
                             journal = jour
                 if not journal:
                     raise UserError(_(
@@ -308,17 +310,9 @@ result = withholdable_base_amount * 0.10
                     self.env['account.payment'].search(
                         previos_payments_domain).mapped('amount'))
             else:
+                # Por qué: para tabla_ganancias, el cálculo de previous
+                # se hace completo en l10n_ar_account_withholding
                 previous_withholding_amount = 0
-                prev_payments = self.env['account.payment'].search(previos_payments_domain)
-                for prev_payment in prev_payments:
-                    if prev_payment.payment_group_id.payment_date.year == payment_group.payment_date.year and prev_payment.payment_group_id.payment_date.month == payment_group.payment_date.month and \
-                            prev_payment.payment_group_id.payment_date.day <= payment_group.payment_date.day:
-                                tax_factor = 1
-                                if prev_payments.payment_group_id:
-                                    pg_id = prev_payments.payment_group_id
-                                    for matched_move in payment_group.debt_move_line_ids:
-                                        tax_factor = matched_move.move_id._get_tax_factor()
-                                previous_withholding_amount += prev_payment.amount * tax_factor
 
             #raise ValidationError('%s %s'%(previous_withholding_amount,previos_payments_domain))
 

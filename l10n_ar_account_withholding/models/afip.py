@@ -5,7 +5,16 @@ from odoo import models, fields
 class AfipTablagananciasEscala(models.Model):
     _name = 'afip.tabla_ganancias.escala'
     _rec_name = 'importe_desde'
+    # Por qué: ordenar por régimen permite agrupar escalas específicas vs generales
+    _order = 'regimen_id, importe_desde'
 
+    # Por qué: si regimen_id está seteado, la escala aplica solo a ese régimen.
+    # Si es False, es la escala general (RG 830) usada por defecto.
+    regimen_id = fields.Many2one(
+        'afip.tabla_ganancias.alicuotasymontos',
+        string='Régimen',
+        ondelete='set null',
+    )
     importe_desde = fields.Float(
         'Mas de $',
     )
@@ -47,4 +56,11 @@ class AfipTablagananciasAlicuotasymontos(models.Model):
         '% No Inscripto'
     )
     montos_no_sujetos_a_retencion = fields.Float(
+    )
+    # Por qué: One2many inverso para acceder rápido a las escalas
+    # específicas de este régimen desde la vista form y el cálculo
+    escala_ids = fields.One2many(
+        'afip.tabla_ganancias.escala',
+        'regimen_id',
+        string='Escalas',
     )

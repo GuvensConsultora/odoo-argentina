@@ -2,25 +2,50 @@
 <openerp>
     <data>
 
-<!--         <record id="view_afip_tabla_ganancias_alicuotasymontos_form" model="ir.ui.view">
+        <record id="view_afip_tabla_ganancias_alicuotasymontos_form" model="ir.ui.view">
             <field name="name">afip.tabla_ganancias.alicuotasymontos.form</field>
             <field name="model">afip.tabla_ganancias.alicuotasymontos</field>
             <field name="arch" type="xml">
-                <form string="AFIP tax">
-                    <group>
-                        <field name="name"/>
-                        <field name='code'/>
-                        <field name='active'/>
-                    </group>
+                <form string="Régimen Ganancias">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="codigo_de_regimen"/>
+                                <field name="anexo_referencia"/>
+                            </group>
+                            <group>
+                                <field name="porcentaje_inscripto"/>
+                                <field name="porcentaje_no_inscripto"/>
+                                <field name="montos_no_sujetos_a_retencion"/>
+                            </group>
+                        </group>
+                        <field name="concepto_referencia"/>
+                        <!-- Por qué: pestaña de escalas visible solo cuando
+                             porcentaje_inscripto == -1 (= calcular por escala) -->
+                        <notebook>
+                            <page string="Escalas" name="escalas"
+                                invisible="porcentaje_inscripto != -1">
+                                <field name="escala_ids">
+                                    <tree editable="bottom">
+                                        <field name="importe_desde"/>
+                                        <field name="importe_hasta"/>
+                                        <field name="importe_fijo"/>
+                                        <field name="porcentaje"/>
+                                        <field name="importe_excedente"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
                 </form>
             </field>
-        </record> -->
+        </record>
 
         <record id="view_afip_tabla_ganancias_alicuotasymontos_tree" model="ir.ui.view">
             <field name="name">afip.tabla_ganancias.alicuotasymontos.tree</field>
             <field name="model">afip.tabla_ganancias.alicuotasymontos</field>
             <field name="arch" type="xml">
-                <tree string="AFIP tax" >
+                <tree string="Regímenes Ganancias">
                     <field name="codigo_de_regimen"/>
                     <field name="anexo_referencia"/>
                     <field name="concepto_referencia"/>
@@ -32,16 +57,14 @@
         </record>
 
         <record model="ir.actions.act_window" id="act_afip_tabla_ganancias_alicuotasymontos">
-            <field name="name">AFIP tax</field>
+            <field name="name">Regímenes Ganancias</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">afip.tabla_ganancias.alicuotasymontos</field>
             <field name="view_mode">tree,form</field>
         </record>
 
-	<menuitem name="Alicuotas y Montos Ganancias" action="act_afip_tabla_ganancias_alicuotasymontos" id="menu_action_afip_tabla_ganancias_alicuotasymontos"
-	       	sequence="95" parent="l10n_ar.menu_afip_config"/>
+        <menuitem name="Alicuotas y Montos Ganancias" action="act_afip_tabla_ganancias_alicuotasymontos" id="menu_action_afip_tabla_ganancias_alicuotasymontos"
+            sequence="95" parent="l10n_ar.menu_afip_config"/>
 
     </data>
 </openerp>
-<!-- vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4
-     -->

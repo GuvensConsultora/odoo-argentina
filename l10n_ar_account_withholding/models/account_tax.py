@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api
-from odoo.exceptions import UserError,ValidationError
-from dateutil.relativedelta import relativedelta
-import datetime
+from odoo.exceptions import UserError, ValidationError
 from datetime import date
 
 
@@ -29,6 +27,175 @@ class AccountTax(models.Model):
             previos_payment_groups_domain,
             previos_payments_domain)
 
+    # =====================================================================
+    # Ganancias — Métodos auxiliares
+    # =====================================================================
+
+    def _get_ganancias_base_amount(self, payment_group, vals):
+        """Obtener base imponible neta del pago.
+        Por qué: si hay facturas seleccionadas, usamos el neto (tax_factor).
+        Si es adelanto (sin facturas), usamos to_pay_amount.
+        """
+        base_amount = 0.0
+        if payment_group.debt_move_line_ids:
+            for move_line in payment_group.debt_move_line_ids:
+                # Por qué: _get_tax_factor() retorna ratio neto/total de la factura
+                # amount_residual es negativo para deuda → multiplicamos por -1
+                base_amount += (
+                    move_line.move_id._get_tax_factor() * (-1)
+                    * move_line.with_context(
+                        payment_group_id=payment_group.id
+                    ).amount_residual
+                )
+        else:
+            # Patrón: adelanto — no hay facturas, usamos el monto a pagar
+            base_amount = payment_group.to_pay_amount
+        return base_amount
+
+    def _get_ganancias_accumulated(self, payment_group):
+        """Buscar pagos previos del mismo mes/partner/régimen.
+        Retorna (monto_acumulado, retenciones_previas).
+        Por qué: una sola búsqueda de pagos previos elimina la duplicación
+        del código viejo que buscaba 2 veces.
+        """
+        today = payment_group.payment_date
+        first_day = date(today.year, today.month, 1)
+
+        # Por qué: buscamos TODOS los pagos outbound posted del mes
+        # para este partner, excluyendo el payment_group actual
+        prev_payments = self.env['account.payment'].search([
+            ('payment_type', '=', 'outbound'),
+            ('state', '=', 'posted'),
+            ('payment_group_id', '!=', payment_group.id),
+            ('partner_id', '=', payment_group.partner_id.id),
+            ('payment_group_id.payment_date', '>=', str(first_day)),
+            ('payment_group_id.payment_date', '<=', today),
+            ('payment_group_id.retencion_ganancias', '=', 'nro_regimen'),
+            ('payment_group_id.regimen_ganancias_id', '=',
+                payment_group.regimen_ganancias_id.id),
+        ])
+
+        accumulated_amount = 0.0
+        previous_withholding = 0.0
+        has_prev_withholding = False
+
+        for payment in prev_payments:
+            if payment.tax_withholding_id.id == self.id:
+                # Por qué: es una retención previa de este mismo impuesto
+                # → sumar para descontar después
+                previous_withholding += payment.amount
+                has_prev_withholding = True
+            else:
+                # Por qué: es un pago normal (no retención de este tax)
+                # → acumular su base para el cálculo
+                pg = payment.payment_group_id
+                if pg and pg.matched_move_line_ids:
+                    for matched_line in pg.matched_move_line_ids:
+                        accumulated_amount += (
+                            matched_line.move_id._get_tax_factor() * (-1)
+                            * matched_line.with_context(
+                                payment_group_id=pg.id
+                            ).payment_group_matched_amount
+                        )
+                else:
+                    accumulated_amount += payment.amount
+
+        return accumulated_amount, previous_withholding, has_prev_withholding
+
+    def _compute_ganancias_escala(self, regimen, base_amount):
+        """Calcular retención por escala.
+        Por qué: si el régimen tiene escala_ids propias, usarlas.
+        Si no, usar la escala general (regimen_id = False).
+        Patrón: fallback — escala específica → escala general.
+        """
+        domain = [
+            ('importe_desde', '<=', base_amount),
+            ('importe_hasta', '>', base_amount),
+        ]
+        if regimen.escala_ids:
+            # Escala específica del régimen (ej: 119 tiene RG 5423)
+            domain.append(('regimen_id', '=', regimen.id))
+        else:
+            # Escala general RG 830 (regimen_id = False)
+            domain.append(('regimen_id', '=', False))
+
+        escala = self.env['afip.tabla_ganancias.escala'].search(
+            domain, limit=1)
+        if not escala:
+            raise UserError(
+                'No se encontró escala para el monto %s '
+                '(régimen %s)' % (base_amount, regimen.codigo_de_regimen))
+
+        # Fórmula: importe_fijo + porcentaje * (base - excedente)
+        amount = escala.importe_fijo + (
+            escala.porcentaje / 100.0) * (base_amount - escala.importe_excedente)
+        comment = "%s + (%s x %s)" % (
+            escala.importe_fijo,
+            base_amount - escala.importe_excedente,
+            escala.porcentaje / 100.0)
+        return amount, comment
+
+    def _compute_ganancias_inscripto(self, payment_group, regimen, vals):
+        """Cálculo completo para inscriptos (AC).
+        Flujo:
+        1. Base imponible del pago actual
+        2. Acumular pagos del período
+        3. Restar monto no sujeto (1 sola vez por mes)
+        4. Calcular por escala o porcentaje fijo
+        5. Restar retenciones previas del mes
+        """
+        # 1. Base imponible del pago actual
+        base_amount = self._get_ganancias_base_amount(payment_group, vals)
+
+        # 2. Acumular pagos del mes (si está configurado)
+        accumulated_amount = 0.0
+        previous_withholding = 0.0
+        has_prev_withholding = False
+        if self.withholding_accumulated_payments:
+            accumulated_amount, previous_withholding, has_prev_withholding = \
+                self._get_ganancias_accumulated(payment_group)
+            base_amount += accumulated_amount
+
+        # 3. Restar monto no sujeto a retención
+        non_taxable = regimen.montos_no_sujetos_a_retencion
+        vals['withholding_non_taxable_amount'] = non_taxable
+
+        if base_amount <= non_taxable and not has_prev_withholding:
+            # Por qué: si la base no supera el mínimo y no hay retenciones
+            # previas, no corresponde retener
+            vals['withholdable_base_amount'] = 0.0
+            vals['period_withholding_amount'] = 0.0
+            vals['previous_withholding_amount'] = previous_withholding
+            vals['comment'] = "Base %s <= Monto no sujeto %s" % (
+                base_amount, non_taxable)
+            return vals
+
+        base_amount -= non_taxable
+
+        # 4. Calcular retención según tipo
+        if regimen.porcentaje_inscripto == -1:
+            # Por qué: porcentaje_inscripto = -1 indica "calcular por escala"
+            amount, comment = self._compute_ganancias_escala(
+                regimen, base_amount)
+        else:
+            # Porcentaje fijo (ej: régimen 78 → 2%)
+            amount = base_amount * (regimen.porcentaje_inscripto / 100.0)
+            comment = "%s x %s%%" % (base_amount, regimen.porcentaje_inscripto)
+
+        # 5. Verificar mínimo no imponible
+        if amount < self.withholding_non_taxable_minimum and not has_prev_withholding:
+            amount = 0.0
+
+        vals['withholdable_base_amount'] = base_amount
+        vals['period_withholding_amount'] = amount
+        vals['previous_withholding_amount'] = previous_withholding
+        vals['comment'] = comment
+        return vals
+
+    # =====================================================================
+    # Método principal — override de get_withholding_vals
+    # =====================================================================
+
     def get_withholding_vals(self, payment_group):
         commercial_partner = payment_group.commercial_partner_id
 
@@ -43,166 +210,46 @@ class AccountTax(models.Model):
         vals = super(AccountTax, self).get_withholding_vals(
             payment_group, force_withholding_amount_type)
         base_amount = vals['withholdable_base_amount']
+
         if self.withholding_type == 'partner_tax':
             amount = base_amount * (alicuota)
-            vals['comment'] = "%s x %s" % (
-                base_amount, alicuota)
+            vals['comment'] = "%s x %s" % (base_amount, alicuota)
             vals['period_withholding_amount'] = amount
+
         elif self.withholding_type == 'tabla_ganancias':
+            # Por qué: usamos el régimen del payment_group (no el del partner)
+            # Tip: el régimen se selecciona al crear el pago, puede diferir
+            # del default del partner
             regimen = payment_group.regimen_ganancias_id
             imp_ganancias_padron = commercial_partner.imp_ganancias_padron
-            if (
-                    payment_group.retencion_ganancias != 'nro_regimen' or
-                    not regimen):
-                # if amount zero then we dont create withholding
+
+            if (payment_group.retencion_ganancias != 'nro_regimen'
+                    or not regimen):
+                # Sin régimen configurado → no retener
                 amount = 0.0
             elif not imp_ganancias_padron:
                 raise UserError(
-                    'El partner %s no tiene configurada inscripcion en '
+                    'El partner %s no tiene configurada inscripción en '
                     'impuesto a las ganancias' % commercial_partner.name)
             elif imp_ganancias_padron in ['EX', 'NC']:
-                # if amount zero then we dont create withholding
+                # Exento o no corresponde → no retener
                 amount = 0.0
-            # TODO validar excencion actualizada
             elif imp_ganancias_padron == 'AC':
-                if base_amount == 0:
-                    base_amount = payment_group.to_pay_amount
-                # alicuota inscripto
-                non_taxable_amount = (
-                    regimen.montos_no_sujetos_a_retencion)
-                vals['withholding_non_taxable_amount'] = non_taxable_amount
-                prev_payments = []
-                if self.withholding_accumulated_payments:
-                    payment_date = str(payment_group.payment_date)[:8]
-                    payment_date = payment_date + '00'
-                    payments = self.env['account.payment'].search([('payment_type','=','outbound'),('state','=','posted'),('payment_group_id','!=',payment_group.id),\
-                                        ('partner_id','=',payment_group.partner_id.id),('used_withholding','=',False),('payment_group_id.retencion_ganancias','=','nro_regimen')])
-                    previous_amount = 0
-                    for payment in payments:
-                        if payment_group.payment_date.month == payment.payment_group_id.payment_date.month and payment_group.payment_date.year == payment.payment_group_id.payment_date.year:
-                            if payment_group.payment_date.day >= payment.payment_group_id.payment_date.day:
-                                if payment.payment_group_id and payment.payment_group_id.matched_move_line_ids:
-                                    for matched_line in payment.payment_group_id.matched_move_line_ids:
-                                        matched_amount = matched_line.move_id._get_tax_factor() * (-1) * matched_line.with_context({'payment_group_id': payment.payment_group_id.id}).payment_group_matched_amount
-                                    previous_amount += matched_amount
-                                else:
-                                    previous_amount += payment.amount
-                                    # esta linea MGO
-                                prev_payments.append(str(payment.id))
-                    base_amount += previous_amount
-                    payment_group.write({'temp_payment_ids': ','.join(prev_payments)})
-
-                if base_amount < non_taxable_amount and not prev_payments:
-                    base_amount = 0.0
-                elif not prev_payments:
-                    #raise ValidationError('estamos aca #2')
-                    base_amount -= non_taxable_amount
-                elif prev_payments:
-                    flag_substract = True
-                    for idx in prev_payments:
-                        prev_pay_obj = self.env['account.payment'].browse(int(idx))
-                        if prev_pay_obj.tax_withholding_id:
-                            flag_substract = False
-                    if flag_substract:
-                        #raise ValidationError('estamos aca #3')
-                        base_amount -= non_taxable_amount
-
-                vals['withholdable_base_amount'] = base_amount
-                escala = self.env['afip.tabla_ganancias.escala'].search([
-                        ('importe_desde', '<=', base_amount),
-                        ('importe_hasta', '>', base_amount),
-                ], limit=1)
-                importe_excedente = escala.importe_excedente
-                #today = date.today()
-                today = payment_group.payment_date
-                prev_date = date(today.year,today.month,1)
-                prev_payments = self.env['account.payment'].search([('payment_type','=','outbound'),('state','=','posted'),('payment_group_id.payment_date','>=',str(prev_date)),\
-                                        ('payment_group_id.payment_date','<=',today),('partner_id','=',payment_group.partner_id.id),('tax_withholding_id','=',self.id)])
-                if prev_payments:
-                    vals['withholding_non_taxable_amount'] = 0
-                    if vals['withholdable_base_amount'] == 0:
-                        vals['withholdable_base_amount'] = vals['total_amount']
-                    else:
-                        vals['withholdable_base_amount'] = vals['withholdable_base_amount'] + payment_group.partner_id.default_regimen_ganancias_id.montos_no_sujetos_a_retencion
-                    vals['period_withholding_amount'] = vals['withholdable_base_amount'] * payment_group.partner_id.default_regimen_ganancias_id.porcentaje_inscripto / 100
-                    vals['previous_withholding_amount'] = 0
-                    base_amount = vals['withholdable_base_amount']
-                #raise ValidationError('estamos aca %s %s'%(prev_payments,vals))
-
-                # Changes MGO - base imponible
-                withholdable_base_amount = 0
-                if not payment_group.debt_move_line_ids:
-                    withholdable_base_amount += payment_group.to_pay_amount
-                else:
-                    for matched_move in payment_group.debt_move_line_ids:
-                        matched_amount = matched_move.move_id._get_tax_factor() * (-1) * matched_move.with_context({'payment_group_id': payment_group.id}).amount_residual
-                        withholdable_base_amount += matched_amount
-                period_withholding_amount = 0
-                non_taxable_amount = 0
-                non_taxable_amount = payment_group.partner_id.default_regimen_ganancias_id.montos_no_sujetos_a_retencion
-                # Agregar soporte a montos netos de facturas
-                prev_payments_no_withholding = self.env['account.payment'].search([('payment_type','=','outbound'),('state','=','posted'),('payment_group_id.payment_date','>=',str(prev_date)),\
-                                        ('payment_group_id.payment_date','<=',today),('partner_id','=',payment_group.partner_id.id),('tax_withholding_id','!=',self.id)])
-                prev_payments_with_withholding = self.env['account.payment'].search([('payment_type','=','outbound'),('state','=','posted'),('payment_group_id.payment_date','>=',str(prev_date)),\
-                                        ('payment_group_id.payment_date','<=',today),('partner_id','=',payment_group.partner_id.id),('tax_withholding_id','=',self.id)])
-                if not prev_payments_with_withholding :
-                    if prev_payments_no_withholding:
-                        for prev_payments in prev_payments_no_withholding:
-                            withholdable_base_amount += prev_payments.amount
-                    withholdable_base_amount = withholdable_base_amount - non_taxable_amount
-                if withholdable_base_amount > 0:
-                    period_withholding_amount = withholdable_base_amount * payment_group.partner_id.default_regimen_ganancias_id.porcentaje_inscripto / 100
-                if period_withholding_amount < self.withholding_non_taxable_minimum and not prev_payments_with_withholding:
-                    period_withholding_amount = 0
-                vals['withholdable_base_amount'] = withholdable_base_amount
-                vals['period_withholding_amount'] = period_withholding_amount
-
-                if regimen.porcentaje_inscripto == -1:
-                    # hacemos <= porque si es 0 necesitamos que encuentre
-                    # la primer regla (0 es en el caso en que la no
-                    # imponible sea mayor)
-                    escala = self.env['afip.tabla_ganancias.escala'].search([
-                        ('importe_desde', '<=', base_amount),
-                        ('importe_hasta', '>', base_amount),
-                    ], limit=1)
-                    if not escala:
-                        raise UserError(
-                            'No se encontro ninguna escala para el monto'
-                            ' %s' % (base_amount))
-                    amount = escala.importe_fijo
-                    #amount += (escala.porcentaje / 100.0) * (
-                    #    base_amount - escala.importe_excedente)
-                    amount += (escala.porcentaje / 100.0) * (
-                        base_amount - importe_excedente)
-                    #vals['comment'] = "%s + (%s x %s)" % (
-                    #    escala.importe_fijo,
-                    #    base_amount - escala.importe_excedente,
-                    #    escala.porcentaje / 100.0)
-                    vals['comment'] = "%s + (%s x %s)" % (
-                        escala.importe_fijo,
-                        base_amount - importe_excedente,
-                        escala.porcentaje / 100.0)
-                else:
-                    # raise ValidationError('llegamos aca')
-                    #amount = base_amount * (
-                    #    regimen.porcentaje_inscripto / 100.0)
-                    amount = period_withholding_amount
-                    vals['comment'] = "%s x %s" % (
-                        base_amount, regimen.porcentaje_inscripto / 100.0)
+                # Inscripto — cálculo completo
+                vals = self._compute_ganancias_inscripto(
+                    payment_group, regimen, vals)
+                # communication se arma abajo
             elif imp_ganancias_padron == 'NI':
-                # alicuota no inscripto
-                amount = base_amount * (
-                    regimen.porcentaje_no_inscripto / 100.0)
-                vals['comment'] = "%s x %s" % (
-                    base_amount, regimen.porcentaje_no_inscripto / 100.0)
-            # TODO, tal vez sea mejor utilizar otro campo?
+                # No inscripto — porcentaje fijo directo
+                base_ni = self._get_ganancias_base_amount(payment_group, vals)
+                amount = base_ni * (regimen.porcentaje_no_inscripto / 100.0)
+                vals['period_withholding_amount'] = amount
+                vals['comment'] = "%s x %s%%" % (
+                    base_ni, regimen.porcentaje_no_inscripto)
+
             vals['communication'] = "%s - %s" % (
                 regimen.codigo_de_regimen, regimen.concepto_referencia)
-            #if amount < self.withholding_non_taxable_minimum:
-            #    amount = 0
 
-            # vals['period_withholding_amount'] = amount
-        # raise ValidationError('estamos aca %s'%(vals))
         return vals
 
     def get_partner_alicuota_percepcion(self, partner, date):
@@ -225,7 +272,6 @@ class AccountTax(models.Model):
             self, base_amount, price_unit, quantity=1.0, product=None,
             partner=None, fixed_multiplicator=1):
         if self.amount_type == 'partner_tax':
-            # TODO obtener fecha de otra manera?
             try:
                 date = self._context.date_invoice
             except Exception:
