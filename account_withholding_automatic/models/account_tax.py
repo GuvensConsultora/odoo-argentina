@@ -1,6 +1,7 @@
 from odoo import models, fields, api, _
 import odoo.addons.decimal_precision as dp
 from odoo.exceptions import UserError, ValidationError
+from odoo.tools.misc import formatLang
 from ast import literal_eval
 from odoo.tools.safe_eval import safe_eval as eval
 from dateutil.relativedelta import relativedelta
@@ -124,6 +125,89 @@ result = withholdable_base_amount * 0.10
                 return rule
         return False
 
+    # =====================================================================
+    # Chatter — registro detallado del cálculo de retención
+    # =====================================================================
+
+    def _chatter_row(self, label, value, bold=False, size=None):
+        """Helper: fila de tabla HTML para el chatter de retenciones."""
+        style = 'padding:2px 0;'
+        if bold:
+            style += 'font-weight:bold;'
+        if size:
+            style += 'font-size:%s;' % size
+        return (
+            '<tr style="%s"><td>%s</td>'
+            '<td style="text-align:right;">%s</td></tr>'
+        ) % (style, label, value)
+
+    def _post_withholding_chatter(self, payment_group, vals,
+                                  computed_amount, comment, chatter_detail):
+        """Registrar detalle del cálculo de retención en chatter del pago.
+        Por qué: trazabilidad completa de cada paso del cálculo para auditoría.
+        Override en localizaciones para detalle específico (Ganancias, IVA, etc.)
+        """
+        self.ensure_one()
+        currency = payment_group.currency_id
+        fmt = lambda a: formatLang(self.env, a, currency_obj=currency)
+
+        rows = []
+        rows.append(self._chatter_row(
+            'Monto facturado',
+            fmt(vals.get('withholdable_invoiced_amount', 0))))
+        if vals.get('withholdable_advanced_amount'):
+            rows.append(self._chatter_row(
+                '(+) Anticipos',
+                fmt(vals['withholdable_advanced_amount'])))
+        if vals.get('accumulated_amount'):
+            rows.append(self._chatter_row(
+                '(+) Acumulado período',
+                fmt(vals['accumulated_amount'])))
+        rows.append(self._chatter_row(
+            '(=) Total', fmt(vals.get('total_amount', 0)), bold=True))
+        if vals.get('withholding_non_taxable_amount'):
+            rows.append(self._chatter_row(
+                '(-) Monto no sujeto',
+                fmt(vals['withholding_non_taxable_amount'])))
+        rows.append(self._chatter_row(
+            'Base imponible',
+            fmt(vals.get('withholdable_base_amount', 0)), bold=True))
+        if comment:
+            rows.append(
+                '<tr><td colspan="2" style="padding:2px 0;">'
+                '<small style="color:#666;">Fórmula: %s</small>'
+                '</td></tr>' % comment)
+        # Separador
+        rows.append(
+            '<tr><td colspan="2">'
+            '<hr style="border:none;border-top:1px dashed #ccc;margin:4px 0;"/>'
+            '</td></tr>')
+        rows.append(self._chatter_row(
+            'Retención del período',
+            fmt(vals.get('period_withholding_amount', 0))))
+        if vals.get('previous_withholding_amount'):
+            rows.append(self._chatter_row(
+                '(-) Retenciones previas',
+                fmt(vals['previous_withholding_amount'])))
+        rows.append(self._chatter_row(
+            'RETENCIÓN A APLICAR', fmt(computed_amount),
+            bold=True, size='14px'))
+
+        html = (
+            '<div style="font-family:Arial,sans-serif;font-size:12px;'
+            'background:#f8f9fa;padding:12px;border-left:4px solid #2c3e50;'
+            'margin:8px 0;">'
+            '<b>\U0001f4cb %s</b>'
+            '<table style="width:100%%;margin-top:8px;">%s</table>'
+            '</div>'
+        ) % (self.display_name, '\n'.join(rows))
+
+        payment_group.message_post(
+            body=html,
+            message_type='comment',
+            subtype_xmlid='mail.mt_note',
+        )
+
     def create_payment_withholdings(self, payment_group):
         for tax in self.filtered(lambda x: x.withholding_type != 'none'):
             payment_withholding = self.env[
@@ -147,38 +231,33 @@ result = withholdable_base_amount * 0.10
                     raise ValidationError(tax.withholding_user_error_message)
             vals = tax.get_withholding_vals(payment_group)
 
-            # we set computed_withholding_amount, hacemos round porque
-            # si no puede pasarse un valor con mas decimales del que se ve
-            # y terminar dando error en el asiento por debitos y creditos no
-            # son iguales, algo parecido hace odoo en el compute_all de taxes
+            # Por qué: round para evitar diferencias de decimales en el asiento
             currency = payment_group.currency_id
             period_withholding_amount = currency.round(vals.get(
                 'period_withholding_amount', 0.0))
             previous_withholding_amount = currency.round(vals.get(
                 'previous_withholding_amount'))
-            # withholding can not be negative
             computed_withholding_amount = max(0, (
                 period_withholding_amount - previous_withholding_amount))
 
+            # Por qué: extraer keys auxiliares que no son campos de
+            # account.payment y registrar detalle completo en el chatter
+            comment = vals.pop('comment', False)
+            chatter_detail = vals.pop('_chatter_detail', {})
+            tax._post_withholding_chatter(
+                payment_group, vals, computed_withholding_amount,
+                comment, chatter_detail)
+
             if not computed_withholding_amount:
-                # if on refresh no more withholding, we delete if it exists
                 if payment_withholding:
                     payment_withholding.unlink()
                 continue
 
-            # we copy withholdable_base_amount on base_amount
-            # al final vimos con varios clientes que este monto base
-            # debe ser la base imponible de lo que se está pagando en este
-            # voucher
             vals['withholding_base_amount'] = vals.get(
                 'withholdable_advanced_amount') + vals.get(
                 'withholdable_invoiced_amount')
             vals['amount'] = computed_withholding_amount
             vals['computed_withholding_amount'] = computed_withholding_amount
-
-            # por ahora no imprimimos el comment, podemos ver de llevarlo a
-            # otro campo si es de utilidad
-            vals.pop('comment')
             if payment_withholding:
                 payment_withholding.write(vals)
             else:
