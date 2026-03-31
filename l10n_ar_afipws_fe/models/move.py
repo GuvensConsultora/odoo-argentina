@@ -572,7 +572,7 @@ print "Observaciones:", wscdc.Obs
             imp_op_ex = str("%.2f" % inv.vat_exempt_base_amount)
             moneda_id = inv.currency_id.l10n_ar_afip_code
             #moneda_ctz = round(1/inv.currency_id.rate,2)
-            moneda_ctz = inv.currency_id.rate
+            moneda_ctz = inv.manual_currency_rate or inv.currency_id.rate
             if not moneda_id:
                 raise ValidationError('No esta definido el codigo AFIP en la moneda')
 
