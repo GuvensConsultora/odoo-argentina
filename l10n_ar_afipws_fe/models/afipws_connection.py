@@ -34,9 +34,9 @@ class AfipwsConnection(models.Model):
             ('wscdc', 'Constatación de Comprobantes (WSCDC)'),
         ],
         ondelete={
-            'wsfe': 'set default', 'wsmtxca': 'set default',
-            'wsfex': 'set default', 'wsbfe': 'set default',
-            'wscdc': 'set default',
+            'wsfe': 'cascade', 'wsmtxca': 'cascade',
+            'wsfex': 'cascade', 'wsbfe': 'cascade',
+            'wscdc': 'cascade',
         },
     )
 
