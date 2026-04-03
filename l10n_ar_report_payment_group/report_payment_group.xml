@@ -96,7 +96,7 @@
 	            <tr t-foreach="o.payment_ids" t-as="p">
 	              <td>
 	                  <span t-field="p.journal_id"/>
-	                  <!-- Cheque propio (emitido o recibido directo) -->
+	                  <!-- Cheque propio emitido (check_id directo) -->
 	                  <t t-if="'check_id' in p._fields and p.check_id">
 	                      <t t-set="chk" t-value="p.check_id"/>
 	                      <br/><small style="color: #555;">
@@ -107,18 +107,25 @@
 	                          <t t-if="chk.payment_date"> | Fecha cobro: <span t-esc="chk.payment_date"/></t>
 	                      </small>
 	                  </t>
-	                  <!-- Cheque de terceros entregado (l10n_latam_check_id -> check_id) -->
-	                  <t t-if="'l10n_latam_check_id' in p._fields and p.l10n_latam_check_id and (not ('check_id' in p._fields and p.check_id))">
-	                      <t t-set="chk" t-value="p.l10n_latam_check_id.check_id if 'check_id' in p.l10n_latam_check_id._fields else False"/>
-	                      <t t-if="chk">
-	                          <br/><small style="color: #555;">
-	                              Cheque Nro: <span t-esc="chk.number"/>
-	                              <t t-if="chk.owner_name"> | Emisor: <span t-esc="chk.owner_name"/></t>
-	                              <t t-if="chk.owner_vat"> | CUIT: <span t-esc="chk.owner_vat"/></t>
-	                              <t t-if="chk.bank_id"> | Banco: <span t-esc="chk.bank_id.name"/></t>
-	                              <t t-if="chk.payment_date"> | Fecha cobro: <span t-esc="chk.payment_date"/></t>
-	                          </small>
-	                      </t>
+	                  <!-- Cheque de terceros entregado: datos en el payment referenciado -->
+	                  <t t-if="'l10n_latam_check_id' in p._fields and p.l10n_latam_check_id and not ('check_id' in p._fields and p.check_id)">
+	                      <t t-set="cp" t-value="p.l10n_latam_check_id"/>
+	                      <br/><small style="color: #555;">
+	                          <t t-if="'check_number' in cp._fields and cp.check_number">Cheque Nro: <span t-esc="cp.check_number"/></t>
+	                          <t t-if="'check_number' not in cp._fields and cp.name">Cheque Nro: <span t-esc="cp.name"/></t>
+	                          <!-- Emisor desde account.check si existe -->
+	                          <t t-if="'check_id' in cp._fields and cp.check_id">
+	                              <t t-if="cp.check_id.owner_name"> | Emisor: <span t-esc="cp.check_id.owner_name"/></t>
+	                              <t t-if="cp.check_id.owner_vat"> | CUIT: <span t-esc="cp.check_id.owner_vat"/></t>
+	                              <t t-if="cp.check_id.bank_id"> | Banco: <span t-esc="cp.check_id.bank_id.name"/></t>
+	                          </t>
+	                          <!-- Fallback: datos nativos del payment -->
+	                          <t t-if="'check_id' not in cp._fields or not cp.check_id">
+	                              <t t-if="'l10n_latam_check_issuer_vat' in cp._fields and cp.l10n_latam_check_issuer_vat"> | CUIT: <span t-esc="cp.l10n_latam_check_issuer_vat"/></t>
+	                              <t t-if="'l10n_latam_check_bank_id' in cp._fields and cp.l10n_latam_check_bank_id"> | Banco: <span t-esc="cp.l10n_latam_check_bank_id.name"/></t>
+	                          </t>
+	                          <t t-if="'l10n_latam_check_payment_date' in cp._fields and cp.l10n_latam_check_payment_date"> | Fecha cobro: <span t-esc="cp.l10n_latam_check_payment_date"/></t>
+	                      </small>
 	                  </t>
 	              </td>
 	              <td><span t-field="p.date"/></td>
