@@ -96,12 +96,12 @@
 	            <tr t-foreach="o.payment_ids" t-as="p">
 	              <td>
 	                  <span t-field="p.journal_id"/>
-	                  <t t-if="p.check_id">
+	                  <t t-if="'check_id' in p._fields and p.check_id">
 	                      <br/><small style="color: #555;">
-	                          Cheque Nro: <span t-field="p.check_id.number"/>
-	                          <t t-if="p.check_id.owner_name"> | Emisor: <span t-field="p.check_id.owner_name"/></t>
-	                          <t t-if="p.check_id.owner_vat"> | CUIT: <span t-field="p.check_id.owner_vat"/></t>
-	                          <t t-if="p.l10n_latam_check_bank_id"> | Banco: <span t-field="p.l10n_latam_check_bank_id"/></t>
+	                          Cheque Nro: <span t-esc="p.check_id.number"/>
+	                          <t t-if="p.check_id.owner_name"> | Emisor: <span t-esc="p.check_id.owner_name"/></t>
+	                          <t t-if="p.check_id.owner_vat"> | CUIT: <span t-esc="p.check_id.owner_vat"/></t>
+	                          <t t-if="'l10n_latam_check_bank_id' in p._fields and p.l10n_latam_check_bank_id"> | Banco: <span t-esc="p.l10n_latam_check_bank_id.name"/></t>
 	                      </small>
 	                  </t>
 	              </td>
