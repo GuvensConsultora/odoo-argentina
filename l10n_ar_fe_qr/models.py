@@ -28,7 +28,7 @@ class AccountMove(models.Model):
                 except:
                     dict_invoice = 'ERROR'
                     pass
-                res = str(dict_invoice).replace("\n", "")
+                res = json.dumps(dict_invoice)
             else:
                 res = 'N/A'
             rec.json_qr = res

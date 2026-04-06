@@ -10,7 +10,7 @@
 		</xpath>
 	</template>
 
-	   <template id="qr_report_invoice_document" inherit_id="account.report_invoice_document">
+	   <template id="qr_report_invoice_document" inherit_id="l10n_ar.report_invoice_document">
 		<xpath expr="//div[@id='qrcode']" position="replace">
 	            <div id="qrcode" class="footer" style="border: 1px solid black;" height="150px">
 	              <div class="row" style="margin-bottom: 0px !important; padding-top: 3px; padding-bottom: 3px;">

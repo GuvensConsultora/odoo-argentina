@@ -902,7 +902,9 @@ print "Observaciones:", wscdc.Obs
                     "tipoCodAut": 'E',
                     "codAut": rec.afip_auth_code,
                 }
-                rec.fe_qr_url = vals_qr
+                json_str = json.dumps(vals_qr)
+                b64 = base64.b64encode(json_str.encode('utf-8')).decode('utf-8')
+                rec.fe_qr_url = 'https://www.afip.gob.ar/fe/qr/?p=' + b64
                 qr.add_data(rec.fe_qr_url)
                 qr.make(fit=True)
                 img = qr.make_image()
