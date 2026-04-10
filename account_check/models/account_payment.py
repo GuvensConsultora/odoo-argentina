@@ -47,7 +47,7 @@ class AccountPayment(models.Model):
     def create_check(self, check_type, operation, bank):
         self.ensure_one()
         checkbook_id = None
-        if check_type == 'issue_check':
+        if check_type == 'issue_check' and self.journal_id.checkbook_ids:
             active_checkbooks = self.journal_id.checkbook_ids.filtered(
                 lambda l: l.state == 'active')
             if not active_checkbooks:
