@@ -24,7 +24,7 @@
 		<field name="l10n_latam_check_id" position="attributes">
 			<attribute name="context">{'tree_view_ref': 'account_check.view_payment_check_tree','search_view_ref': 'l10n_latam_check.view_account_payment_third_party_checks_search'}</attribute>
 			<attribute name="domain">
-                        [('payment_method_code', '=', 'new_third_party_checks'), ('state', '=', 'posted'), ('company_id', '=', company_id), ('check_id.state','=','holding')]
+                        [('payment_method_code', '=', 'new_third_party_checks'), ('journal_id', '=', journal_id), ('state', '=', 'posted'), ('company_id', '=', company_id), ('check_id.state','=','holding')]
                             if payment_type == 'outbound' else
                         [('payment_method_code', '=', 'new_third_party_checks'), ('l10n_latam_check_current_journal_id', '=', journal_id), ('state', '=', 'posted'), ('company_id', '=', company_id)]
                             if is_internal_transfer else
