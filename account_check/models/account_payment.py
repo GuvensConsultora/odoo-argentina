@@ -48,9 +48,23 @@ class AccountPayment(models.Model):
         self.ensure_one()
         checkbook_id = None
         if check_type == 'issue_check':
-            checkbook_id = self.journal_id.checkbook_ids.filtered(lambda l: l.state == 'active')
-            if len(checkbook_id) != 1:
-                raise ValidationError('No hay chequeras disponibles')
+            active_checkbooks = self.journal_id.checkbook_ids.filtered(
+                lambda l: l.state == 'active')
+            if not active_checkbooks:
+                raise ValidationError(
+                    'No hay chequeras activas en el diario "%s". '
+                    'Cree o active una chequera antes de emitir cheques.'
+                    % self.journal_id.name)
+            checkbook_id = active_checkbooks[0]
+            if len(active_checkbooks) > 1:
+                self.message_post(
+                    body=_(
+                        'Se encontraron %d chequeras activas en el diario "%s". '
+                        'Se utilizó la chequera "%s". Considere dejar solo una '
+                        'chequera activa por diario para evitar confusiones.'
+                    ) % (len(active_checkbooks), self.journal_id.name,
+                         checkbook_id.name),
+                )
             checkbook_id.next_number = checkbook_id.next_number + 1
             self.check_number = checkbook_id.next_number
 
