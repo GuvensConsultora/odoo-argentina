@@ -103,13 +103,16 @@ class AccountPayment(models.Model):
         repartition_line = self._get_withholding_repartition_line()
         liquidity_vals = vals_list[0]
         liquidity_vals['name'] = self.withholding_number or '/'
-        if repartition_line:
-            if repartition_line.account_id:
-                liquidity_vals['account_id'] = repartition_line.account_id.id
-            # tax_line_id es related de tax_repartition_line_id.tax_id y no se
-            # puede escribir: se setea la línea de distribución y el impuesto
-            # queda vinculado solo.
-            liquidity_vals['tax_repartition_line_id'] = repartition_line.id
+        if repartition_line and repartition_line.account_id:
+            liquidity_vals['account_id'] = repartition_line.account_id.id
+        # NO se escribe tax_repartition_line_id a propósito. l10n_ar_withholding
+        # (localización de Odoo) borra en _synchronize_to_moves toda línea cuyo
+        # tax_line_id tenga marca de retención —su propio comentario dice "as the
+        # synchronization mechanism is not implemented yet"—. Al vincular la línea
+        # de distribución, la línea se creaba y ese código la eliminaba enseguida,
+        # dejando el asiento desbalanceado y una línea de compensación en la cuenta
+        # transitoria. Sin ese vínculo la línea sobrevive y el importe queda en la
+        # cuenta de retención, que es lo que importa para el crédito fiscal.
         return vals_list
 
     def _compute_payment_method_description(self):
