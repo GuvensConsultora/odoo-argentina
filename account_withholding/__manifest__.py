@@ -35,5 +35,5 @@
     'installable': True,
     'name': 'Retenciones en pagos',
     'test': [],
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.1.0',
 }
