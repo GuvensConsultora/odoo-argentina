@@ -36,18 +36,23 @@ class AccountPayment(models.Model):
         self.ensure_one()
         return self.payment_method_code in WITHHOLDING_CODES
 
-    def _get_withholding_account(self):
-        """Cuenta contable donde impacta la retención.
+    def _get_withholding_repartition_line(self):
+        """Línea de distribución del impuesto de retención.
 
-        Se usa la cuenta del impuesto cuando la retención acompaña el sentido
-        natural de la operación (cobro de cliente / pago a proveedor) y la de
-        devolución en el caso inverso.
+        Hasta la v13 el impuesto tenía account_id y refund_account_id
+        directamente. Esos campos ya no existen: la cuenta vive en las líneas de
+        distribución, y la que corresponde es la de tipo 'tax'. Se usa la de
+        factura cuando la retención acompaña el sentido natural de la operación
+        (cobro de cliente / pago a proveedor) y la de devolución en el inverso.
         """
         self.ensure_one()
+        tax = self.tax_withholding_id
         if ((self.partner_type == 'customer' and self.payment_type == 'inbound') or
                 (self.partner_type == 'supplier' and self.payment_type == 'outbound')):
-            return self.tax_withholding_id.account_id
-        return self.tax_withholding_id.refund_account_id
+            lines = tax.invoice_repartition_line_ids
+        else:
+            lines = tax.refund_repartition_line_ids
+        return lines.filtered(lambda r: r.repartition_type == 'tax')[:1]
 
     def action_post(self):
         """Completa el número de retención desde la secuencia del impuesto.
@@ -83,8 +88,8 @@ class AccountPayment(models.Model):
         En un pago de retención no hay movimiento real de fondos: lo que el
         cliente no entregó se reconoce como crédito fiscal. Por eso la línea que
         iría a la caja o al banco se redirige a la cuenta del impuesto y se le
-        agrega el vínculo con el impuesto, que es lo que la hace visible en los
-        informes de impuestos.
+        agrega la línea de distribución del impuesto, que es lo que la hace
+        visible en los informes de impuestos.
         """
         vals_list = super()._prepare_move_line_default_vals(
             write_off_line_vals=write_off_line_vals, force_balance=force_balance)
@@ -95,12 +100,16 @@ class AccountPayment(models.Model):
         if self.is_internal_transfer:
             raise UserError(_('No se pueden usar retenciones en transferencias internas.'))
 
-        account = self._get_withholding_account()
+        repartition_line = self._get_withholding_repartition_line()
         liquidity_vals = vals_list[0]
-        if account:
-            liquidity_vals['account_id'] = account.id
         liquidity_vals['name'] = self.withholding_number or '/'
-        liquidity_vals['tax_line_id'] = self.tax_withholding_id.id
+        if repartition_line:
+            if repartition_line.account_id:
+                liquidity_vals['account_id'] = repartition_line.account_id.id
+            # tax_line_id es related de tax_repartition_line_id.tax_id y no se
+            # puede escribir: se setea la línea de distribución y el impuesto
+            # queda vinculado solo.
+            liquidity_vals['tax_repartition_line_id'] = repartition_line.id
         return vals_list
 
     def _compute_payment_method_description(self):
