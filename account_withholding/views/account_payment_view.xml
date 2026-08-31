@@ -7,12 +7,29 @@
         <field name="arch" type="xml">
             <field name='ref' position="after">
                 <div colspan="2">
-                    <group string="Datos de retencion" name="withholding_data" invisible = "payment_method_code != 'withholding'">
-			    <field name="tax_withholding_id"  options="{'no_create': True, 'no_open': True}" string="Impuesto de retencion"
-				    domain="[('type_tax_use', '=', partner_type), ('company_id', '=', company_id)]" 
-				    required = "payment_method_code == 'withholding'"/>
+                    <!--
+                        El bloque se muestra con los códigos que este módulo crea en
+                        data/account_payment_method_data.xml. La condición histórica
+                        preguntaba por 'withholding' a secas, que no existe: el bloque
+                        quedaba oculto siempre.
+
+                        El dominio del impuesto lee l10n_ar_withholding_payment_type,
+                        que es la marca de la localización de Odoo. Se prefiere a
+                        type_tax_use porque las dos marcas son excluyentes entre sí
+                        (l10n_ar_withholding borra la suya cuando type_tax_use != 'none'):
+                        leyendo la de Odoo, el mismo impuesto sirve para este circuito
+                        y para el asistente nativo de registro de pagos.
+                    -->
+                    <group string="Datos de retencion" name="withholding_data"
+                           invisible="payment_method_code not in ('withholding', 'withholding_customers', 'withholding_suppliers')">
+                        <field name="tax_withholding_id" options="{'no_create': True, 'no_open': True}"
+                               string="Impuesto de retencion"
+                               domain="[('l10n_ar_withholding_payment_type', '=', partner_type), ('company_id', '=', company_id)]"
+                               required="payment_method_code in ('withholding', 'withholding_customers', 'withholding_suppliers')"/>
                         <field name="withholding_number" string="Nro de retencion"/>
-                        <field name="withholding_base_amount" required = "payment_method_code == 'withholding'" string="Monto base de retencion"/>
+                        <field name="withholding_base_amount"
+                               required="payment_method_code in ('withholding', 'withholding_customers', 'withholding_suppliers')"
+                               string="Monto base de retencion"/>
                     </group>
                 </div>
             </field>

@@ -26,6 +26,11 @@
         'account',
         # for payment method description and company_id field on form view
         'l10n_ar',
+        # el dominio del impuesto de retención lee l10n_ar_withholding_payment_type,
+        # que define este módulo de la localización. Se usa esa marca y no
+        # type_tax_use porque son excluyentes entre sí, y así el mismo impuesto
+        # sirve para este circuito y para el asistente nativo de registro de pagos.
+        'l10n_ar_withholding',
     ],
     'installable': True,
     'name': 'Retenciones en pagos',
