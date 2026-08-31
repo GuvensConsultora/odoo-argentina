@@ -330,11 +330,27 @@ class AccountPayment(models.Model):
         payment = super(AccountPayment, self).create(vals)
         if payment.move_id and payment.currency_id.id != payment.company_id.currency_id.id \
                 and abs(payment.amount_company_currency) > 0:
-            for move_line in payment.move_id.line_ids:
-                if move_line.debit > 0:
-                    move_line.with_context({'check_move_validity': False}).write({'debit': abs(payment.amount_company_currency)})
-                if move_line.credit > 0:
-                    move_line.with_context({'check_move_validity': False}).write({'credit': abs(payment.amount_company_currency)})
+            # Este forzado sólo tiene sentido cuando el asiento tiene las dos
+            # líneas propias del pago (liquidez y contrapartida): ahí ponerles el
+            # mismo importe en moneda de compañía lo deja balanceado.
+            #
+            # Si el asiento trae líneas adicionales —retenciones sufridas y su base
+            # imponible, que agrega l10n_ar_withholding— el cálculo nativo ya es
+            # correcto (la contrapartida es el bruto y cada retención lleva su
+            # propio importe convertido). Forzar ahí desbalancea el asiento y obliga
+            # a Odoo a insertar una línea de compensación, así que no se toca.
+            company = payment.company_id
+            base_account = company.sudo().l10n_ar_tax_base_account_id \
+                if 'l10n_ar_tax_base_account_id' in company._fields else company.browse()
+            extra_lines = payment.move_id.line_ids.filtered(
+                lambda l: l.tax_repartition_line_id or l.tax_ids or (
+                    base_account and l.account_id == base_account))
+            if not extra_lines:
+                for move_line in payment.move_id.line_ids:
+                    if move_line.debit > 0:
+                        move_line.with_context({'check_move_validity': False}).write({'debit': abs(payment.amount_company_currency)})
+                    if move_line.credit > 0:
+                        move_line.with_context({'check_move_validity': False}).write({'credit': abs(payment.amount_company_currency)})
         if create_payment_group:
             payment.payment_group_id.post()
         return payment
