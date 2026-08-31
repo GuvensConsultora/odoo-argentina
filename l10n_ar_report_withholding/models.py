@@ -82,8 +82,11 @@ class AccountPayment(models.Model):
                 # NI: porcentaje fijo del régimen
                 if partner.imp_ganancias_padron == 'NI':
                     return regimen.porcentaje_no_inscripto
-        # Fallback: cálculo inverso desde montos
-        base = self.withholdable_base_amount
+        # Fallback: cálculo inverso desde montos.
+        # withholdable_base_amount lo completa el motor de retenciones
+        # automáticas; en una carga manual queda en cero y la alícuota salía 0%.
+        # Se usa entonces la base que cargó el operador.
+        base = self.withholdable_base_amount or self.withholding_base_amount
         if base:
             return round(abs(self.amount) / abs(base) * 100, 2)
         return 0.0
