@@ -35,7 +35,7 @@
     <field name="inherit_id" ref="account_payment_group.view_move_line_tree"/>
     <field name="arch" type="xml">
         <field name="amount_residual" position="replace">
-            <field name="payment_group_matched_amount" string="Paid Amount" sum="Total"/>
+            <field name="payment_group_matched_amount" string="Importe pagado" sum="Total"/>
         </field>
         <field name="amount_residual_currency" position="replace">
             <field name="financial_amount_residual" sum="Total" groups="account_financial_amount.account_use_financial_amounts"/>

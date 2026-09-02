@@ -171,7 +171,7 @@ class AccountPaymentGroup(models.Model):
         string="Líneas de deuda",
         # no podemos ordenar por due date porque esta hardecodeado en
         # funcion _get_pair_to_reconcile
-        help="Payment will be automatically matched with the oldest lines of "
+        help="El cobro se imputa automáticamente a las facturas más antiguas de "
         "this list (by maturity date). You can remove any line you"
         " dont want to be matched.",
         domain=move_lines_domain,
@@ -304,7 +304,7 @@ class AccountPaymentGroup(models.Model):
                 else:
                     name = ', '.join(rec.payment_ids.mapped('name'))
             else:
-                name = _('Draft Payment')
+                name = _('Recibo en borrador')
             rec.name = name
 
     _sql_constraints = [

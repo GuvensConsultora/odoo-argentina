@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 {
     "name": "Account Payment with Multiple methods",
-    "version": "17.0.1.2.0",
+    "version": "17.0.1.3.0",
     "category": "Accounting",
     "author": "A2 Systems,ADHOC SA,",
     "license": "AGPL-3",

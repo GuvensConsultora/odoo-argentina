@@ -10,12 +10,12 @@
     <field name="arch" type="xml">
         <tree decoration-info="state=='draft'" decoration-muted="state in ['reconciled', 'cancel']">
 	    <field name="payment_date"/>
-	    <field name="display_name"/>
+	    <field name="display_name" string="Recibo"/>
             <!-- <field name="name"/> -->
             <field name="partner_id"/>
             <field name="payment_methods"/>
             <field name="payments_amount" sum="Total" string="Monto"/>
-            <field name="state"/>
+            <field name="state" string="Estado"/>
             <field name="company_id" groups="base.group_multi_company"/>
             <field name="currency_id" invisible="1"/>
             <field name="partner_type" invisible="1"/>
@@ -29,7 +29,7 @@
     <field name="model">account.payment.group</field>
     <field name="arch" type="xml">
     <search string="Payments">
-            <field name="display_name" filter_domain="['|',('name','ilike',self),('communication','ilike',self)]" string="Description"/>
+            <field name="display_name" filter_domain="['|',('name','ilike',self),('communication','ilike',self)]" string="Descripción"/>
             <separator/>
             <field name="payment_methods"/>
             <field name="partner_id" />
@@ -39,12 +39,12 @@
             <separator/>
             <filter string="Draft" domain="[('state','=','draft')]" name='state_draft'/>
             <filter string="Posted" domain="[('state','=','posted')]" name='state_posted'/>
-            <filter string="Not Cancelled" domain="[('state','!=','cancel')]" name='not_cancelled'/>
+            <filter string="Sin anular" domain="[('state','!=','cancel')]" name='not_cancelled'/>
             <!-- <filter string="Sent" domain="[('state','=','sent')]" name='state_sent'/> -->
             <!-- <filter string="Reconciled" domain="[('state','=','reconciled')]"/> -->
             <separator/>
             <filter name="partner_id" string="Partner" domain="[]" context="{'group_by': 'partner_id'}"/>
-            <filter name="state" string="State" domain="[]" context="{'group_by': 'state'}"/>
+            <filter name="state" string="Estado" domain="[]" context="{'group_by': 'state'}"/>
             <filter name="currency_id" string="Currency" domain="[]" context="{'group_by': 'currency_id'}" groups="base.group_multi_currency"/>
             <filter name="company_id" string="Company" domain="[]" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
         </search>
@@ -87,7 +87,7 @@
             <sheet>
                 <div class="oe_button_box" name="button_box">
                     <button class="oe_stat_button" name="button_journal_entries"
-                            string="Journal Items" type="object"
+                            string="Asientos contables" type="object"
                             groups="account.group_account_manager"
                             invisible="move_line_ids == []" icon="fa-bars"/>
                     <field name="move_line_ids" invisible="1"/>
@@ -96,7 +96,7 @@
                 <div class="oe_title">
 	            <h1>
        		        <field name="display_name" invisible="display_name == False" class="oe_inline"/>
-	                <label for="next_number" string="- Next Number: " invisible="next_number in (0, False)" class="oe_inline"/>
+	                <label for="next_number" string="- Próximo número: " invisible="next_number in (0, False)" class="oe_inline"/>
         	        <field name="next_number" invisible="next_number in (0, False)" class="oe_inline"/>
 	            </h1>
                 </div>
@@ -143,8 +143,8 @@
 			<button name="remove_all" string="Remover Todos" 
 				invisible="state != 'draft'" 
 				type="object"/>
-                        <button name="%(action_account_payment_group_invoice_wizard)d" string="+ Debit Note" invisible="state != 'draft'" type="action" />
-			<button name="%(action_account_payment_group_invoice_wizard)d" string="+ Credit Note" invisible="state != 'draft'"
+                        <button name="%(action_account_payment_group_invoice_wizard)d" string="+ Nota de débito" invisible="state != 'draft'" type="action" />
+			<button name="%(action_account_payment_group_invoice_wizard)d" string="+ Nota de crédito" invisible="state != 'draft'"
 				context="{'refund': True}" type="action" />
 			<field name="to_pay_move_line_ids" 
 				context="{'tree_view_ref': 'account_payment_group.view_move_line_tree'}" 
@@ -158,13 +158,13 @@
                     </page>
                     <page string="Deudas" invisible="pop_up == True or payment_subtype != 'simple' or state != 'draft'">
                         <p>
-                            Payment will be automatically matched with the oldest lines of this list (by maturity date). You can remove any line you dont want to be matched.
+                            El cobro se imputa automáticamente a las facturas más antiguas de esta lista, por fecha de vencimiento. Si alguna no corresponde, quitala con la cruz de la derecha.
                         </p>
                         <button name="add_all" string="Agregar Todos / Refrescar" invisible="state != 'draft'" type="object"/>
                         <button name="remove_all" string="Remover Todos" invisible="state != 'draft'" type="object"/>
-			<button name="%(action_account_payment_group_invoice_wizard)d" string="+ Debit Note" invisible="state != 'draft'" 
+			<button name="%(action_account_payment_group_invoice_wizard)d" string="+ Nota de débito" invisible="state != 'draft'" 
 				type="action" context="{'internal_type': 'debit_note'}" />
-			<button name="%(action_account_payment_group_invoice_wizard)d" string="+ Credit Note" invisible="state != 'draft'" 
+			<button name="%(action_account_payment_group_invoice_wizard)d" string="+ Nota de crédito" invisible="state != 'draft'" 
 				context="{'refund': True}" type="action" />
 			<field name="debt_move_line_ids" 
 				context="{'tree_view_ref': 'account_payment_group.view_move_line_tree'}" 
@@ -173,7 +173,7 @@
                     <page string="Pagado" invisible="state != 'posted'">
                         <field name="matched_move_line_ids" context="{'payment_group_id': id, 'tree_view_ref': 'account_payment_group.view_move_line_with_matched_tree'}"/>
                     </page>
-                    <page string="Notes">
+                    <page string="Notas">
                         <field name="notes"/>
                     </page>
                 </notebook>
