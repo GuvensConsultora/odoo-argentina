@@ -20,19 +20,29 @@
                         leyendo la de Odoo, el mismo impuesto sirve para este circuito
                         y para el asistente nativo de registro de pagos.
                     -->
-                    <group string="Datos de retencion" name="withholding_data"
+                    <group string="Datos de la retención" name="withholding_data"
                            invisible="payment_method_code not in ('withholding', 'withholding_customers', 'withholding_suppliers')">
                         <field name="tax_withholding_id" options="{'no_create': True, 'no_open': True}"
-                               string="Impuesto de retencion"
+                               string="Impuesto de retención"
                                domain="[('l10n_ar_withholding_payment_type', '=', partner_type), ('company_id', '=', company_id)]"
                                required="payment_method_code in ('withholding', 'withholding_customers', 'withholding_suppliers')"/>
-                        <field name="withholding_number" string="Nro de retencion"/>
+                        <field name="withholding_number" string="Número de retención"/>
                         <field name="withholding_base_amount"
                                required="payment_method_code in ('withholding', 'withholding_customers', 'withholding_suppliers')"
-                               string="Monto base de retencion"/>
+                               string="Monto base de la retención"/>
                     </group>
                 </div>
             </field>
+            <!--
+                La grilla nativa de retenciones (l10n_ar_withholding_ids) queda SIEMPRE
+                vacía en este circuito: no escribimos tax_repartition_line_id en la línea,
+                porque el _synchronize_to_moves() de l10n_ar_withholding borra las líneas
+                que lo tienen. Una grilla vacía con títulos en inglés no informa nada y
+                hace dudar al operador de si le falta cargar algo ahí. Se oculta.
+            -->
+            <xpath expr="//field[@name='l10n_ar_withholding_ids']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
             <xpath expr="//sheet" position="inside">
                   <notebook>
                           <page string="Notas">

@@ -26,10 +26,10 @@ class AccountPayment(models.Model):
     # we make a copy without transfer option, we try with related but it
     # does not works
     payment_type_copy = fields.Selection(
-        selection=[('outbound', 'Send Money'), ('inbound', 'Receive Money')],
+        selection=[('outbound', 'Enviar dinero'), ('inbound', 'Recibir dinero')],
         compute='_compute_payment_type_copy',
         inverse='_inverse_payment_type_copy',
-        string='Payment Type (without transfer)'
+        string='Tipo de pago'
     )
     signed_amount = fields.Monetary(
         string='Monto',

@@ -120,7 +120,7 @@
 
             <field name="payment_type" position="after">
 		    <field name="payment_type_copy" 
-			    string="Payment Type" widget="radio" 
+			    string="Tipo de pago" widget="radio" 
 			    readonly="state != 'draft'" 
 			    groups="account_payment_group.group_choose_payment_type"/>
             </field>
