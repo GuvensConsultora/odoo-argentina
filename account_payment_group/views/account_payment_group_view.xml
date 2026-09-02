@@ -137,7 +137,7 @@
                     </group>
                 </group>
                 <notebook>
-		    <page string="Lineas a pagar" 
+		    <page string="Líneas a pagar" 
 				invisible="pop_up == True or payment_subtype != 'double_validation' or state not in ['draft', 'confirmed']">
                         <button name="add_all" string="Agregar Todos / Refrescar" invisible="state != 'draft'" type="object"/>
 			<button name="remove_all" string="Remover Todos" 
@@ -151,7 +151,7 @@
 				domain="[('partner_id.commercial_partner_id', '=', commercial_partner_id),('account_id.account_type', '=', account_internal_type),('account_id.reconcile', '=', True),('reconciled', '=', False),('full_reconcile_id', '=', False)]"/>
                     </page>
                     <!-- no las pudimos hacer invisibles porque nos da error al venir de una factura y querer hacer las to pay lines tmb invisibles. lo bueno de hacerlas invisibles era que al confirmar se pasaba a las payment lines automaticamente -->
-                    <page string="Lineas de pagos" invisible="payment_subtype == 'double_validation' and state == 'draft'">
+                    <page string="Líneas de pago" invisible="payment_subtype == 'double_validation' and state == 'draft'">
 			    <field name="payment_ids" 
 				    context="{'default_payment_type': partner_type == 'supplier' and 'outbound' or 'inbound', 'default_payment_date': payment_date, 'default_partner_id': partner_id, 'default_partner_type': partner_type, 'payment_group': True, 'default_amount': payment_difference, 'tree_view_ref': 'account_payment_group.view_account_payment_from_group_tree'}" 
 				    readonly="state not in ['draft', 'confirmed']"/>

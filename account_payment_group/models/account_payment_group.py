@@ -43,7 +43,7 @@ class AccountPaymentGroup(models.Model):
     next_number = fields.Integer(
         related='receiptbook_id.sequence_id.number_next_actual',
         #compute='_compute_next_number',
-        string='Prox Numero',
+        string='Próximo número',
     )
     name = fields.Char(
         compute='_compute_name',
@@ -60,7 +60,7 @@ class AccountPaymentGroup(models.Model):
         default=lambda self: self.env.user.company_id,
     )
     payment_methods = fields.Char(
-        string='Metodos de Pago',
+        string='Métodos de pago',
         compute='_compute_payment_methods',
         search='_search_payment_methods',
     )
@@ -168,7 +168,7 @@ class AccountPaymentGroup(models.Model):
         # actualiza bien con el onchange, hacemos computado mejor
         compute='_compute_debt_move_line_ids',
         inverse='_inverse_debt_move_line_ids',
-        string="Lineas de deuda",
+        string="Líneas de deuda",
         # no podemos ordenar por due date porque esta hardecodeado en
         # funcion _get_pair_to_reconcile
         help="Payment will be automatically matched with the oldest lines of "
@@ -184,7 +184,7 @@ class AccountPaymentGroup(models.Model):
         'account_move_line_payment_group_to_pay_rel',
         'payment_group_id',
         'to_pay_line_id',
-        string="Lineas a Pagar",
+        string="Líneas a pagar",
         help='This lines are the ones the user has selected to be paid.',
         copy=False,
         domain=move_lines_domain,
@@ -198,7 +198,7 @@ class AccountPaymentGroup(models.Model):
     matched_move_line_ids = fields.Many2many(
         'account.move.line',
         compute='_compute_matched_move_line_ids',
-        string='Lineas pagadas',
+        string='Líneas pagadas',
         help='Lines that has been matched to payments, only available after '
         'payment validation',
     )
@@ -223,7 +223,7 @@ class AccountPaymentGroup(models.Model):
     payment_ids = fields.One2many(
         'account.payment',
         'payment_group_id',
-        string='Lineas de Pago',
+        string='Líneas de pago',
         copy=False,
         readonly=True,
         auto_join=True,
